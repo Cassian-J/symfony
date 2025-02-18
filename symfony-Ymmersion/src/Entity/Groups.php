@@ -8,12 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: GroupsRepository::class)]
 class Groups
-{
+{   
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
     #[ORM\Column(type: Types::TEXT)]
     private ?string $GroupsUuid = null;
 
@@ -26,10 +22,6 @@ class Groups
     #[ORM\Column]
     private ?int $points = null;
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getGroupsUuid(): ?string
     {

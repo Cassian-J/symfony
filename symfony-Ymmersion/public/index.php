@@ -1,4 +1,5 @@
 <?php
+ini_set('max_execution_time', 120); // 120 secondes
 
 use App\Kernel;
 

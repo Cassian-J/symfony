@@ -50,7 +50,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private ?string $username = null;
 
-    #[ORM\Column(type: 'binary', length: 16777215, nullable: true)]
+    #[ORM\Column(type: 'blob', nullable: true)]
     private $profilePicture = null;
 
     public function getId(): ?int
@@ -154,21 +154,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getProfilePicture()
     {
-        // Si c'est un resource (stream), on le convertit en string
-        if (is_resource($this->profilePicture)) {
-            return stream_get_contents($this->profilePicture, -1, 0);
+        if ($this->profilePicture === null) {
+            return null;
         }
-        // Sinon on retourne directement les données
+        
+        if (is_resource($this->profilePicture)) {
+            $content = stream_get_contents($this->profilePicture);
+            rewind($this->profilePicture);
+            return $content;
+        }
+        
         return $this->profilePicture;
     }
 
     public function setProfilePicture($profilePicture): static
     {
-        if (is_string($profilePicture)) {
-            $this->profilePicture = $profilePicture;
-        } elseif (is_resource($profilePicture)) {
-            $this->profilePicture = stream_get_contents($profilePicture, -1, 0);
+        if ($profilePicture === null) {
+            $this->profilePicture = null;
+            return $this;
         }
+
+        if (is_resource($profilePicture)) {
+            $content = stream_get_contents($profilePicture);
+            rewind($profilePicture);
+            $this->profilePicture = $content;
+        } else {
+            $this->profilePicture = $profilePicture;
+        }
+
         return $this;
     }
 }

@@ -1,10 +1,45 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Verify your email !{% endblock %}
+{% block title %}Mon Profil{% endblock %}
 
 {% block body %}
 <div class="example-wrapper">
-    <h1>hello {{ app.user.email }}</h1>
-    <a href="{{ path('app_logout')}}"> logout</a>
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <h1>Mon Profil</h1>
+    
+    <div class="profile-info">
+        {% if app.user.profilePicture is not null %}
+            <img src="{{ path('app_get_profile_picture') }}" 
+                 alt="Photo de profil" 
+                 style="max-width: 200px; border-radius: 50%;">
+        {% else %}
+            <p>Aucune photo de profil</p>
+        {% endif %}
+
+        <h2>Informations</h2>
+        <p><strong>Pseudo:</strong> {{ app.user.username }}</p>
+        <p><strong>Email:</strong> {{ app.user.email }}</p>
+    </div>
+
+    <div class="profile-form">
+        <h2>Modifier ma photo de profil</h2>
+        {{ form_start(form) }}
+            {{ form_row(form.profilePicture) }}
+            <button type="submit" class="btn btn-primary">Mettre à jour</button>
+        {{ form_end(form) }}
+    </div>
+
+    <a href="{{ path('app_logout')}}" class="btn btn-danger">Déconnexion</a>
 </div>
 {% endblock %}

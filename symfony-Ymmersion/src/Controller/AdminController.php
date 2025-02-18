@@ -11,14 +11,15 @@ final class AdminController extends AbstractController
     #[Route('/admin', name: 'app_admin')]
     public function index(): Response
     {
-        $this->denyAccessUnlessGranted("IS_AUTHENTICATED_FULLY");
+        # $this->denyAccessUnlessGranted("IS_AUTHENTICATED_FULLY");
 
         /** @var User $user */
         $user = $this->getUser();
 
         return match ($user->isVerified()) {
             true => $this->render('admin/index.html.twig'),
-            false => $this->render('admin/please-verify-email.html.twig'),
+            false => $this->render('admin/index.html.twig'),
+            # false => $this->render('admin/please-verify-email.html.twig'),
         };
         return $this->render('admin/index.html.twig');
     }

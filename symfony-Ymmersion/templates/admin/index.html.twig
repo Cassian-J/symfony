@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Verify your email !{% endblock %}
+
+{% block body %}
+<div class="example-wrapper">
+    <h1>hello {{ app.user.email }}</h1>
+    <a href="{{ path('app_logout')}}"> logout</a>
+</div>
+{% endblock %}

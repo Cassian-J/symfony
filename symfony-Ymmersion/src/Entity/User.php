@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -38,6 +39,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     private bool $isVerified = false;
+
+    #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "Le pseudo est obligatoire")]
+    #[Assert\Length(
+        min: 3,
+        max: 50,
+        minMessage: "Le pseudo doit faire au moins {{ limit }} caractères",
+        maxMessage: "Le pseudo ne peut pas dépasser {{ limit }} caractères"
+    )]
+    private ?string $username = null;
+
+    #[ORM\Column(type: 'binary', length: 16777215, nullable: true)]
+    private $profilePicture = null;
 
     public function getId(): ?int
     {
@@ -123,6 +137,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->isVerified = $isVerified;
 
+        return $this;
+    }
+
+    public function getUsername(): ?string
+    {
+        return $this->username;
+    }
+
+    public function setUsername(string $username): static
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+    public function getProfilePicture()
+    {
+        // Si c'est un resource (stream), on le convertit en string
+        if (is_resource($this->profilePicture)) {
+            return stream_get_contents($this->profilePicture, -1, 0);
+        }
+        // Sinon on retourne directement les données
+        return $this->profilePicture;
+    }
+
+    public function setProfilePicture($profilePicture): static
+    {
+        if (is_string($profilePicture)) {
+            $this->profilePicture = $profilePicture;
+        } elseif (is_resource($profilePicture)) {
+            $this->profilePicture = stream_get_contents($profilePicture, -1, 0);
+        }
         return $this;
     }
 }

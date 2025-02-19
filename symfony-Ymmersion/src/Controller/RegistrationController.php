@@ -7,17 +7,14 @@ use App\Form\RegistrationFormType;
 use App\Security\AppAuthenticator;
 use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\Translation\TranslatorInterface;
-use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\HttpFoundation\Cookie;
 
 class RegistrationController extends AbstractController
 {
@@ -49,15 +46,23 @@ class RegistrationController extends AbstractController
 
             // Set UUID manually
             $user->setUserUuid(Uuid::uuid4()->toString());
-
             // Set last connection
             $user->setLastConnection(new \DateTime());
 
             $entityManager->persist($user);
             $entityManager->flush();
-
-            return $security->login($user, AppAuthenticator::class, 'main');
+            $cookie = Cookie::create('user_uuid')
+                ->withValue($user->getUserUuid())
+                ->withExpires(strtotime('+30 days')) // Expire après 30 jours
+                ->withSecure(false) // Mettre à true en production (HTTPS)
+                ->withHttpOnly(true)
+                ->withPath('/');
+            $response = $security->login($user, AppAuthenticator::class, 'main');
+            $response->headers->setCookie($cookie);
+            return $response;
         }
+
+
 
         return $this->render('registration/register.html.twig', [
             'registrationForm' => $form,

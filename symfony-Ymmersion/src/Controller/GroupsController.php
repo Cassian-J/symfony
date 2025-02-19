@@ -35,7 +35,7 @@ final class GroupsController extends AbstractController
         $group->setGroupUuid(Uuid::uuid4()->toString());; // Génère un UUID aléatoire
         $group->setPoint(50); // Définit les points de base
         // Récupération du UserUuid depuis le cookie
-        $userUuid = $request->cookies->get('UserUuid');
+        $userUuid = $request->cookies->get('user_uuid');
         if (!$userUuid) {
             throw new \Exception('Utilisateur non authentifié');
         }
@@ -50,6 +50,7 @@ final class GroupsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $user->setGroupUuid($group);
             $entityManager->persist($group);
             $entityManager->flush();
 

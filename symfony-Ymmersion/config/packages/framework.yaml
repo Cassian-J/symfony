@@ -12,6 +12,8 @@ framework:
         enabled: true
     http_method_override: true
 
+    csrf_protection: true
+
 when@test:
     framework:
         test: true

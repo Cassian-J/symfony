@@ -28,11 +28,11 @@ class Task
     private ?string $Periodicity = null;
 
     #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'tasks')]
-    #[ORM\JoinColumn(name: 'UserUuid', referencedColumnName: 'UserUuid', nullable: true)]
+    #[ORM\JoinColumn(name: 'UserUuid', referencedColumnName: 'user_uuid', nullable: true)]
     private ?Users $UserUuid = null;
 
     #[ORM\ManyToOne(targetEntity: Groups::class)]
-    #[ORM\JoinColumn(nullable:true,name: 'GroupUuid', referencedColumnName: 'GroupUuid')]
+    #[ORM\JoinColumn(nullable:true,name: 'GroupUuid', referencedColumnName: 'group_uuid')]
     private ?Groups $GroupUuid = null;
 
     public function getId(): ?int

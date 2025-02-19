@@ -15,7 +15,7 @@ class GroupLogs
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Groups::class)]
-    #[ORM\JoinColumn(nullable: false,name: 'GroupUuid', referencedColumnName: 'GroupUuid')]
+    #[ORM\JoinColumn(nullable: false,name: 'GroupUuid', referencedColumnName: 'group_uuid')]
     private ?Groups $GroupUuid = null;
 
     #[ORM\Column(nullable: false,type: Types::BOOLEAN)]

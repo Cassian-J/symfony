@@ -22,7 +22,7 @@ class Groups
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'],targetEntity: Users::class)]
     #[ORM\JoinColumn(nullable:false ,name: 'Creator', referencedColumnName: 'user_uuid', unique: true)]
-    private ?Users $Creator = null;
+    private ?string $Creator = null;
 
 
     public function getGroupUuid(): ?string
@@ -61,12 +61,12 @@ class Groups
         return $this;
     }
 
-    public function getCreator(): ?Users
+    public function getCreator(): ?string
     {
         return $this->Creator;
     }
 
-    public function setCreator(Users $Creator): static
+    public function setCreator(string $Creator): static
     {
         $this->Creator = $Creator;
 

@@ -29,11 +29,11 @@ class Task
 
     #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'tasks')]
     #[ORM\JoinColumn(name: 'UserUuid', referencedColumnName: 'user_uuid', nullable: true)]
-    private ?Users $UserUuid = null;
+    private ?string $UserUuid = null;
 
     #[ORM\ManyToOne(targetEntity: Groups::class)]
     #[ORM\JoinColumn(nullable:true,name: 'GroupUuid', referencedColumnName: 'group_uuid')]
-    private ?Groups $GroupUuid = null;
+    private ?string $GroupUuid = null;
 
     #[ORM\Column]
     private ?int $difficulty = null;
@@ -91,24 +91,24 @@ class Task
         return $this;
     }
 
-    public function getUserUuid(): ?Users
+    public function getUserUuid(): ?string
     {
         return $this->UserUuid;
     }
 
-    public function setUserUuid(?Users $UserUuid): static
+    public function setUserUuid(?string $UserUuid): static
     {
         $this->UserUuid = $UserUuid;
 
         return $this;
     }
 
-    public function getGroupUuid(): ?Groups
+    public function getGroupUuid(): ?string
     {
         return $this->GroupUuid;
     }
 
-    public function setGroupUuid(?Groups $GroupUuid): static
+    public function setGroupUuid(?string $GroupUuid): static
     {
         $this->GroupUuid = $GroupUuid;
 

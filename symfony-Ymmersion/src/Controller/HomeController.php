@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Task;
+use Ramsey\Uuid\Uuid;
 use App\Form\TaskType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,7 +24,7 @@ final class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit-task', name: 'task.edit')]
+    #[Route('/{id}/edit-task', name: 'task.edit', methods: ['GET', 'POST'])]
     public function editTask(Request $request,Task $task, EntityManagerInterface $entityManager)
     {
         $form = $this->createForm(TaskType::class, $task);
@@ -33,7 +34,7 @@ final class HomeController extends AbstractController
             $entityManager->flush();
             $this->addFlash(
                'success',
-               'Task succesfully updated'
+               'Task successfully updated'
             );
             return $this->redirectToRoute('app_home');
         }
@@ -48,20 +49,23 @@ final class HomeController extends AbstractController
     public function createTask(Request $request, EntityManagerInterface $entityManager)
     {
         $task = new Task();
+
+        #TODO SET USER UUID AND GROUP UUID AUTOMATICALY WHEN CREATING TASKS
+
         $form = $this->createForm(TaskType::class, $task);
+        $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()){
             $entityManager->persist($task);
             $entityManager->flush();
             $this->addFlash(
                'success',
-               'Task succesfully created'
+               'Task successfully created'
             );
             return $this->redirectToRoute('app_home');
         }
 
-        return $this->render('home/editTask.html.twig', [
-            'task' => $task,
+        return $this->render('home/createTask.html.twig', [
             'form' => $form
         ]);
     }

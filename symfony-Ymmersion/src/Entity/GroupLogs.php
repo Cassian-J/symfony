@@ -16,7 +16,7 @@ class GroupLogs
 
     #[ORM\ManyToOne(targetEntity: Groups::class)]
     #[ORM\JoinColumn(nullable: false,name: 'GroupUuid', referencedColumnName: 'group_uuid')]
-    private ?Groups $GroupUuid = null;
+    private ?string $GroupUuid = null;
 
     #[ORM\Column(nullable: false,type: Types::BOOLEAN)]
     private ?bool $Addition = null;
@@ -29,12 +29,12 @@ class GroupLogs
         return $this->id;
     }
 
-    public function getGroupUuid(): ?Groups
+    public function getGroupUuid(): ?string
     {
         return $this->GroupUuid;
     }
 
-    public function setGroupUuid(?Groups $GroupUuid): static
+    public function setGroupUuid(?string $GroupUuid): static
     {
         $this->GroupUuid = $GroupUuid;
 

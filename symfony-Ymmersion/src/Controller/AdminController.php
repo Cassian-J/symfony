@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
+use App\Entity\Users;
 use App\Form\ProfilePictureType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,7 +17,7 @@ final class AdminController extends AbstractController
     #[Route('/admin', name: 'app_admin')]
     public function index(Request $request, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
     {
-        /** @var User $user */
+        /** @var Users $user */
         $user = $this->getUser();
 
         $form = $this->createForm(ProfilePictureType::class, $user);
@@ -44,13 +44,9 @@ final class AdminController extends AbstractController
                     return $this->redirectToRoute('app_admin');
                 }
 
+                // Convertir le fichier en données binaires pour stockage BLOB
                 $imageData = file_get_contents($profilePicture->getPathname());
-                $finfo = new \finfo(FILEINFO_MIME_TYPE);
-                $mimeType = $finfo->buffer($imageData);
                 
-                // Log pour déboguer
-                error_log("Uploading image: size=" . strlen($imageData) . " bytes, mime=" . $mimeType);
-
                 $user->setProfilePicture($imageData);
                 $entityManager->persist($user);
                 $entityManager->flush();
@@ -68,18 +64,23 @@ final class AdminController extends AbstractController
     #[Route('/profile-picture', name: 'app_get_profile_picture')]
     public function getProfilePicture(): Response
     {
-        /** @var User $user */
+        /** @var Users $user */
         $user = $this->getUser();
         
         if (!$user || !$user->getProfilePicture()) {
-            throw $this->createNotFoundException('No profile picture found');
+            // Retourner une image par défaut
+            $defaultImagePath = $this->getParameter('kernel.project_dir') . '/public/images/default-profile.jpg';
+            return new Response(
+                file_get_contents($defaultImagePath),
+                200,
+                ['Content-Type' => 'image/jpeg']
+            );
         }
 
-        $imageData = $user->getProfilePicture();
-        
-        // Détection du type MIME
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        $mimeType = $finfo->buffer($imageData);
+        $imageData = stream_get_contents($user->getProfilePicture());
+        $imageInfo = getimagesizefromstring($imageData);
+
+        $mimeType = $imageInfo['mime'];
 
         return new Response(
             $imageData,

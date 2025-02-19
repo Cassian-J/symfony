@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: GroupsRepository::class)]
+#[ORM\Table(name: '`groups`')]
 class Groups
 {
     #[ORM\Id]
@@ -23,7 +24,6 @@ class Groups
     #[ORM\OneToOne(cascade: ['persist', 'remove'],targetEntity: Users::class)]
     #[ORM\JoinColumn(nullable:false ,name: 'Creator', referencedColumnName: 'UserUuid', unique: true)]
     private ?Users $Creator = null;
-
 
     public function getGroupUuid(): ?string
     {

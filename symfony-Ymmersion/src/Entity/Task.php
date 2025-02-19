@@ -35,6 +35,9 @@ class Task
     #[ORM\JoinColumn(nullable:true,name: 'GroupUuid', referencedColumnName: 'GroupUuid')]
     private ?Groups $GroupUuid = null;
 
+    #[ORM\Column]
+    private ?int $difficulty = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -108,6 +111,18 @@ class Task
     public function setGroupUuid(?Groups $GroupUuid): static
     {
         $this->GroupUuid = $GroupUuid;
+
+        return $this;
+    }
+
+    public function getDifficulty(): ?int
+    {
+        return $this->difficulty;
+    }
+
+    public function setDifficulty(int $difficulty): static
+    {
+        $this->difficulty = $difficulty;
 
         return $this;
     }

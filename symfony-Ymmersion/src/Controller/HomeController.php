@@ -51,6 +51,7 @@ final class HomeController extends AbstractController
         $task = new Task();
 
         #TODO SET USER UUID AND GROUP UUID AUTOMATICALY WHEN CREATING TASKS
+        $task->setUserUuid("test");
 
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
@@ -68,5 +69,17 @@ final class HomeController extends AbstractController
         return $this->render('home/createTask.html.twig', [
             'form' => $form
         ]);
+    }
+
+    #[Route('/{id}/delete-task', name: 'task.delete', methods: ['DELETE'])]
+    public function deleteTask(Request $request,Task $task, EntityManagerInterface $entityManager)
+    {
+        $entityManager->remove($task);
+        $entityManager->flush();
+        $this->addFlash(
+           'success',
+           'Task successfully deleted'
+        );
+        return $this->redirectToRoute('app_home');
     }
 }

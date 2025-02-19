@@ -11,7 +11,14 @@
 
     {% for task in tasks %}
     <ul>
-        <p>{{task.title}} <a class="btn btn-primary btn-sm" href="{{ path('task.edit', {id: task.id}) }}"> Edit Task </a></p>
+        <p>
+            {{task.title}} 
+            <a class="btn btn-primary btn-sm" href="{{ path('task.edit', {id: task.id}) }}"> Edit Task </a> 
+            <form action="{{ path('task.delete', {id: task.id}) }}" method="post">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn btn-danger btn-sm"> Delete Task </button>
+            </form>
+        </p>
     </ul>
     {% endfor %}
 {% endblock %}

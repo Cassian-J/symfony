@@ -3,5 +3,8 @@
 {% block title "create groups" %}
 
 {% block body%}
-    <p>hello<p>
+    <form action="{{ path('groups.delete') }}" method="post">
+        <input type="hidden" name="_method" value="DELETE">
+        <button type="submit"> Suprimmer</button>
+    </form>
 {% endblock %}

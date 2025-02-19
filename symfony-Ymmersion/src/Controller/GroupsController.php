@@ -21,21 +21,12 @@ final class GroupsController extends AbstractController
     {
         return $this->render('groups/group.html.twig');
     }
-
-    /*#[Route('/groups/{id}', name: 'groups.test',requirements:['id'=>'\d+'])]
-    public function test(Request $request,int $id): Response
-    {
-        return $this->render('groups/test.html.twig',[
-            'id'=>$id
-        ]);
-    }*/
     #[Route('/groups/create', name: 'groups.create', methods:['GET','POST'])]
     public function create(Request $request, EntityManagerInterface $entityManager): Response
     {
         $group = new Groups();
-        $group->setGroupUuid(Uuid::uuid4()->toString());; // Génère un UUID aléatoire
-        $group->setPoint(50); // Définit les points de base
-        // Récupération du UserUuid depuis le cookie
+        $group->setGroupUuid(Uuid::uuid4()->toString());;
+        $group->setPoint(50);
         $userUuid = $request->cookies->get('user_uuid');
         if (!$userUuid) {
             throw new \Exception('Utilisateur non authentifié');

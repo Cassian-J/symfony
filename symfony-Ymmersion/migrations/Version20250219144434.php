@@ -10,11 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-<<<<<<<< HEAD:symfony-Ymmersion/migrations/Version20250219132033.php
-final class Version20250219132033 extends AbstractMigration
-========
-final class Version20250219143048 extends AbstractMigration
->>>>>>>> main:symfony-Ymmersion/migrations/Version20250219143048.php
+final class Version20250219144434 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -44,11 +40,7 @@ final class Version20250219143048 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_527EDB252E46E5BF ON task (UserUuid)');
         $this->addSql('CREATE INDEX IDX_527EDB253D458CB8 ON task (GroupUuid)');
         $this->addSql('CREATE TABLE users (user_uuid CHAR(36) NOT NULL --(DC2Type:guid)
-<<<<<<<< HEAD:symfony-Ymmersion/migrations/Version20250219132033.php
-        , email CLOB NOT NULL, pseudo CLOB NOT NULL, pwd CLOB NOT NULL, last_connection DATETIME NOT NULL, GroupUuid CHAR(36) DEFAULT NULL --(DC2Type:guid)
-========
         , email CLOB NOT NULL, pseudo CLOB NOT NULL, pwd CLOB NOT NULL, last_connection DATETIME NOT NULL, profile_picture BLOB DEFAULT NULL, GroupUuid CHAR(36) DEFAULT NULL --(DC2Type:guid)
->>>>>>>> main:symfony-Ymmersion/migrations/Version20250219143048.php
         , PRIMARY KEY(user_uuid), CONSTRAINT FK_1483A5E93D458CB8 FOREIGN KEY (GroupUuid) REFERENCES groups (group_uuid) NOT DEFERRABLE INITIALLY IMMEDIATE)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1483A5E9E7927C74 ON users (email)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1483A5E986CC499D ON users (pseudo)');

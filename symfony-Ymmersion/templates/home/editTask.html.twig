@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
+{% block title %}Edit Task{% endblock %}
 
 {% block body %}
 <style>
@@ -9,12 +9,8 @@
 </style>
 
 <div class="example-wrapper">
-    <h1>Hello {{ name }}! ✅</h1>
+    <h1>{{task.title}}</h1>
 
-    {% for task in tasks %}
-    <ul>
-        <p>{{task.title}}</p>
-    </ul>
-    {% endfor %}
+    {{form(form)}}
 </div>
 {% endblock %}

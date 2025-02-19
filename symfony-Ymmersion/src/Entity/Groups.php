@@ -21,7 +21,7 @@ class Groups
     private ?int $Point = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'],targetEntity: Users::class)]
-    #[ORM\JoinColumn(nullable:false ,name: 'Creator', referencedColumnName: 'UserUuid', unique: true)]
+    #[ORM\JoinColumn(nullable:false ,name: 'Creator', referencedColumnName: 'user_uuid', unique: true)]
     private ?Users $Creator = null;
 
 

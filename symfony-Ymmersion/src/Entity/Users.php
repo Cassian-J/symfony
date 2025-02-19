@@ -27,7 +27,7 @@ class Users
     private ?\DateTimeInterface $lastConnection = null;
 
     #[ORM\ManyToOne(targetEntity: Groups::class)]
-    #[ORM\JoinColumn(name: 'GroupUuid', referencedColumnName: 'GroupUuid', nullable: true)]
+    #[ORM\JoinColumn(name: 'GroupUuid', referencedColumnName: 'group_uuid', nullable: true)]
     private ?Groups $GroupUuid = null;
 
     public function getUserUuid(): ?string

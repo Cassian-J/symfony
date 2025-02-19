@@ -41,6 +41,22 @@
             {{ form_end(form) }}
         </div>
 
+        <div class="profile-form">
+            <h2>Modifier mon pseudo</h2>
+            {{ form_start(pseudoForm) }}
+                {{ form_row(pseudoForm.pseudo) }}
+                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+            {{ form_end(pseudoForm) }}
+        </div>
+
+        <div class="profile-form">
+            <h2>Modifier mon email</h2>
+            {{ form_start(emailForm) }}
+                {{ form_row(emailForm.email) }}
+                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+            {{ form_end(emailForm) }}
+        </div>
+
         <a href="{{ path('app_logout')}}" class="btn btn-danger">Déconnexion</a>
     {% endif %}
 </div>

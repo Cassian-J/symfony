@@ -15,15 +15,15 @@ class Invitation
 
     #[ORM\ManyToOne(targetEntity: Users::class)]
     #[ORM\JoinColumn(nullable:false,name: 'Sender', referencedColumnName: 'user_uuid')]
-    private ?string $Sender = null;
+    private ?Users $Sender = null;
 
     #[ORM\ManyToOne(targetEntity: Users::class)]
     #[ORM\JoinColumn(nullable:false,name: 'Recever', referencedColumnName: 'user_uuid')]
-    private ?string $Recever = null;
+    private ?Users $Recever = null;
 
     #[ORM\ManyToOne(targetEntity: Groups::class)]
     #[ORM\JoinColumn(nullable:false,name: 'WhichGroup', referencedColumnName: 'group_uuid')]
-    private ?string $WhichGroup = null;
+    private ?Groups $WhichGroup = null;
 
     public function getId(): ?int
     {

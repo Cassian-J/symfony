@@ -8,7 +8,11 @@ framework:
     #esi: true
     #fragments: true
 
+    assets:
+        enabled: true
     http_method_override: true
+
+    csrf_protection: true
 
 when@test:
     framework:

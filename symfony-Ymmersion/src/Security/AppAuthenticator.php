@@ -2,6 +2,7 @@
 
 namespace App\Security;
 
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,15 +29,14 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        $email = $request->getPayload()->getString('email');
-
+        $email = $request->request->get('email', '');
         $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
 
         return new Passport(
             new UserBadge($email),
-            new PasswordCredentials($request->getPayload()->getString('password')),
+            new PasswordCredentials($request->request->get('password', '')),
             [
-                new CsrfTokenBadge('authenticate', $request->getPayload()->getString('_csrf_token')),
+                new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),
                 new RememberMeBadge(),
             ]
         );
@@ -44,12 +44,25 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
+        // Créer un cookie avec l'UUID de l'utilisateur
+        $user = $token->getUser();
+        $cookie = Cookie::create('user_uuid')
+            ->withValue($user->getUserUuid())
+            ->withExpires(strtotime('+30 days')) // Expire après 30 jours
+            ->withSecure(false) // Mettre à true en production (HTTPS)
+            ->withHttpOnly(true)
+            ->withPath('/');
+
+        // Rediriger vers la page cible
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
-            return new RedirectResponse($targetPath);
+            $response = new RedirectResponse($targetPath);
+        } else {
+            $response = new RedirectResponse($this->urlGenerator->generate('app_admin'));
         }
 
-        // For example:
-        return new RedirectResponse($this->urlGenerator->generate('app_admin'));
+        // Ajouter le cookie à la réponse
+        $response->headers->setCookie($cookie);
+        return $response;
     }
 
     protected function getLoginUrl(Request $request): string

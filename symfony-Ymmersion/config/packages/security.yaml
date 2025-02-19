@@ -6,9 +6,7 @@ security:
     providers:
         # used to reload user from session & other features (e.g. switch_user)
         app_user_provider:
-            entity:
-                class: App\Entity\User
-                property: email
+            id: App\Security\UserProvider
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -19,8 +17,8 @@ security:
             custom_authenticator: App\Security\AppAuthenticator
             logout:
                 path: app_logout
-                # where to redirect after logout
-                # target: app_any_route
+                target: app_login
+                invalidate_session: true
 
             remember_me:
                 secret: '%kernel.secret%'

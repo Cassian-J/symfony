@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: GroupsRepository::class)]
 class Groups
 {
+    
     #[ORM\Id]
     #[ORM\Column(type: Types::GUID ,nullable:false)]
     #[ORM\GeneratedValue(strategy: "NONE")] // UUID généré manuellement
@@ -20,9 +21,9 @@ class Groups
     #[ORM\Column(type: Types::INTEGER,nullable:false)]
     private ?int $Point = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'],targetEntity: Users::class)]
+    #[ORM\OneToOne(targetEntity: Users::class)]
     #[ORM\JoinColumn(nullable:false ,name: 'Creator', referencedColumnName: 'user_uuid', unique: true)]
-    private ?string $Creator = null;
+    private ?Users $Creator = null;
 
 
     public function getGroupUuid(): ?string
@@ -61,12 +62,12 @@ class Groups
         return $this;
     }
 
-    public function getCreator(): ?string
+    public function getCreator(): ?Users
     {
         return $this->Creator;
     }
 
-    public function setCreator(string $Creator): static
+    public function setCreator(Users $Creator): static
     {
         $this->Creator = $Creator;
 

@@ -16,10 +16,10 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue(strategy: "NONE")] // UUID généré manuellement
     private ?string $UserUuid = null;
 
-    #[ORM\Column(type: Types::TEXT, unique: true,nullable:false)]
+    #[ORM\Column(type: Types::TEXT, unique: true, nullable: false)]
     private ?string $Email = null;
 
-    #[ORM\Column(type: Types::TEXT, unique: true,nullable:false)]
+    #[ORM\Column(type: Types::TEXT, unique: true, nullable: false)]
     private ?string $Pseudo = null;
 
     #[ORM\Column(type: Types::TEXT,nullable:false)]

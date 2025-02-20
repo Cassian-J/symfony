@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Users;
 use App\Form\ProfilePictureType;
+use App\Form\UpdatePseudoType;
+use App\Form\UpdateEmailType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,8 +22,20 @@ final class AdminController extends AbstractController
         /** @var Users $user */
         $user = $this->getUser();
 
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
         $form = $this->createForm(ProfilePictureType::class, $user);
         $form->handleRequest($request);
+
+        // Formulaire pour modifier le pseudo
+        $pseudoForm = $this->createForm(UpdatePseudoType::class, $user);
+        $pseudoForm->handleRequest($request);
+
+        // Formulaire pour modifier l'email
+        $emailForm = $this->createForm(UpdateEmailType::class, $user);
+        $emailForm->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $profilePicture = $form->get('profilePicture')->getData();
@@ -56,8 +70,44 @@ final class AdminController extends AbstractController
             }
         }
 
+        if ($pseudoForm->isSubmitted() && $pseudoForm->isValid()) {
+            $newPseudo = $pseudoForm->get('pseudo')->getData();
+            $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['Pseudo' => $newPseudo]);
+
+            if ($existingUser && $existingUser->getUserUuid() !== $user->getUserUuid()) {
+                $this->addFlash('error', 'Ce pseudo est déjà utilisé par un autre utilisateur.');
+                return $this->redirectToRoute('app_admin');
+            }
+
+            $user->setPseudo($newPseudo);
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Votre pseudo a été mis à jour avec succès.');
+            return $this->redirectToRoute('app_admin');
+        }
+
+        if ($emailForm->isSubmitted() && $emailForm->isValid()) {
+            $newEmail = $emailForm->get('email')->getData();
+            $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['Email' => $newEmail]);
+
+            if ($existingUser && $existingUser->getUserUuid() !== $user->getUserUuid()) {
+                $this->addFlash('error', 'Cet email est déjà utilisé par un autre utilisateur.');
+                return $this->redirectToRoute('app_admin');
+            }
+
+            $user->setEmail($newEmail);
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Votre email a été mis à jour avec succès.');
+            return $this->redirectToRoute('app_admin');
+        }
+
         return $this->render('admin/index.html.twig', [
-            'form' => $form,
+            'form' => $form->createView(),
+            'pseudoForm' => $pseudoForm->createView(),
+            'emailForm' => $emailForm->createView(),
         ]);
     }
 

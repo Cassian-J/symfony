@@ -152,9 +152,9 @@ class Task
         return $this->Days;
     }
 
-    public function setDays(?string $Days): static
+    public function setDays(?array $Days): static
     {
-        $this->Days = $Days;
+        $this->Days ? implode(',', $Days) : null;
 
         return $this;
     }

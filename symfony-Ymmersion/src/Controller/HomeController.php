@@ -68,6 +68,12 @@ final class HomeController extends AbstractController
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()){
+            $days = $form->get('Days')->getData();
+            if ($days) {
+                $task->setDays($days);
+            } else {
+                $task->setDays(null);
+            }
             $entityManager->flush();
             return $this->cookieController->message('success','Task successfully updated','app_home');
         }
@@ -107,7 +113,9 @@ final class HomeController extends AbstractController
 
             $days = $form->get('Days')->getData();
             if ($days) {
-                $task->setDays(implode(',', $days));
+                $task->setDays($days); // Convertir en string avec séparateur
+            } else {
+                $task->setDays(null);
             }
 
             $entityManager->persist($task);

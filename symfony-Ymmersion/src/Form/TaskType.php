@@ -32,19 +32,20 @@ class TaskType extends AbstractType
             ])
             ->add('Days', ChoiceType::class, [
                 'choices' => [
-                    'Monday' => 1,
-                    'Tuesday' => 2,
-                    'Wednesday' => 3,
-                    'Thursday' => 4,
-                    'Friday' => 5,
-                    'Saturday' => 6,
-                    'Sunday' => 7,
+                    'Lundi' => 1,
+                    'Mardi' => 2,
+                    'Mercredi' => 3,
+                    'Jeudi' => 4,
+                    'Vendredi' => 5,
+                    'Samedi' => 6,
+                    'Dimanche' => 7,
                 ],
                 'expanded' => true,
                 'multiple' => true,
                 'required' => false,
-                'attr' => ['class' => 'weekly-days-selector'], // Add a class for easy JS selection
+                'attr' => ['class' => 'weekly-days-selector'],
             ])
+            
             ->add('Difficulty', ChoiceType::class, [
                 'choices' => [
                     'Very Easy' => 1,

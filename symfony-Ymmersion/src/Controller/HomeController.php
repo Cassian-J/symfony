@@ -57,6 +57,7 @@ final class HomeController extends AbstractController
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()){
+            $task->setCreatedAt(new \DateTimeImmutable());
             $entityManager->persist($task);
             $entityManager->flush();
             $this->addFlash(
@@ -80,6 +81,69 @@ final class HomeController extends AbstractController
            'success',
            'Task successfully deleted'
         );
+        return $this->redirectToRoute('app_home');
+    }
+
+    #[Route('/{id}/validate-task', name: 'task.validate')]
+    public function validateTask(Request $request,Task $task, EntityManagerInterface $entityManager)
+    {
+        $grouplog = new GroupLogs();
+        switch($task->getDifficulty()){
+            case 0:
+                $grouplog->setPoint(1);
+                break;
+            case 1:
+                $grouplog->setPoint(2);
+                break;
+            case 2:
+                $grouplog->setPoint(5);
+                break;
+            case 3:
+                $grouplog->setPoint(10);
+                break;
+            default:
+                $grouplog->setPoint(0);
+                break;
+        }
+        $grouplog->setTaskId($task);
+        $grouplog->setUserUuid();
+        $grouplog->setGroupUuid();
+
+        $entityManager->persist($grouplog);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('app_home');
+    }
+
+    #[Route('/{id}/invalidate-task', name: 'task.invalidate')]
+    public function invalidateTask(Request $request,Task $task, EntityManagerInterface $entityManager)
+    {
+
+        $grouplog = new GroupLogs();
+        switch($task->getDifficulty()){
+            case 0:
+                $grouplog->setPoint(-8);
+                break;
+            case 1:
+                $grouplog->setPoint(-5);
+                break;
+            case 2:
+                $grouplog->setPoint(-2);
+                break;
+            case 3:
+                $grouplog->setPoint(-1);
+                break;
+            default:
+                $grouplog->setPoint(0);
+                break;
+        }
+        $grouplog->setTaskId($task);
+        $grouplog->setUserUuid();
+        $grouplog->setGroupUuid();
+
+        $entityManager->persist($grouplog);
+        $entityManager->flush();
+
         return $this->redirectToRoute('app_home');
     }
 }

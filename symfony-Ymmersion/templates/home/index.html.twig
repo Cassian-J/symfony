@@ -14,7 +14,14 @@
         <p>
             {{task.title}} 
             <a class="btn btn-primary btn-sm" href="{{ path('task.edit', {id: task.id}) }}"> Edit Task </a> 
-            
+            <form action="{{ path('task.validate', {id: task.id}) }}" method="post">
+                <input type="hidden">
+                <button type="submit" class="btn btn-danger btn-sm"> Validate Task </button>
+            </form>
+            <form action="{{ path('task.invalidate', {id: task.id}) }}" method="post">
+                <input type="hidden">
+                <button type="submit" class="btn btn-danger btn-sm"> Invalidate Task </button>
+            </form>
         </p>
     </ul>
     {% endfor %}

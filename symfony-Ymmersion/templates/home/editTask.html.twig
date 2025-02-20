@@ -3,14 +3,26 @@
 {% block title %}Edit Task{% endblock %}
 
 {% block body %}
-    <h1>{{task.title}}</h1>
+    <div class="container mt-4">
+        <h1>{{task.title}}</h1>
 
-    {{ form(form) }}
+        {{ form_start(form, {'attr': {'class': 'form'}}) }}
+                {{ form_row(form.Title) }}
+                {{ form_row(form.Description) }}
+                {{ form_row(form.Color) }}
+                {{ form_row(form.Periodicity) }}
 
-    <form action="{{ path('task.delete', {id: task.id}) }}" method="post">
-        <input type="hidden" name="_method" value="DELETE">
-        <button type="submit" class="btn btn-danger btn-sm"> Delete Task </button>
-    </form>
+                {{ form_row(form.Days)}}
+                {{ form_row(form.Difficulty) }}
+                {{ form_row(form.isGroupTask) }}
+                {{ form_row(form.save) }}
+        {{ form_end(form) }}
+
+        <form action="{{ path('task.delete', {id: task.id}) }}" method="post">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="btn btn-danger btn-sm"> Delete Task </button>
+        </form>
+    </div>
 {% endblock %}
 
 {% block javascripts %}

@@ -1,0 +1,21 @@
+/* public/css/custom.css */
+
+/* Exemple de personnalisation */
+body {
+    background-color: #f8f9fa; /* Couleur de fond personnalisée */
+}
+
+.btn-primary {
+    background-color: #007bff; /* Couleur de fond du bouton primaire */
+    border-color: #007bff; /* Couleur de bordure du bouton primaire */
+}
+
+.alert-success {
+    background-color: #d4edda; /* Couleur de fond de l'alerte de succès */
+    color: #155724; /* Couleur du texte de l'alerte de succès */
+}
+
+/* Personnalisation des formulaires */
+.form-control {
+    border: 1px solid #007bff; /* Couleur de bordure des champs de formulaire */
+}

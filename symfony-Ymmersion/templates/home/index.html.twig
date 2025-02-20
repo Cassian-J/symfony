@@ -3,36 +3,39 @@
 {% block title %}Hello HomeController!{% endblock %}
 
 {% block body %}
-    <h1>Hello {{ name }}! ✅</h1>
+<div class="container mt-4">
 
-    <p>
-        <a class="btn btn-primary btn-sm" href="{{ path('task.create') }}"> Create Task </a>
-    </p>
+    <div class="text-center my-3">
+        <a class="btn btn-primary btn-lg" href="{{ path('task.create') }}">Créer une Tâche</a>
+    </div>
 
     {% for task in tasks %}
-    <ul>
-        <h3>{{task.title}}</h3>
-        <p>{{task.description}}</p>
-        <p>{{task.periodicity}}</p>
-        {% if task.periodicity == 'weekly' %}
-            <p>Days:
-                {% set days = task.days|split(',') %}
-                {% for day in days %}
-                    {{ day }}
-                {% endfor %}
-            </p>
-        {% endif %}
-        <p>
-            <a class="btn btn-primary btn-sm" href="{{ path('task.edit', {id: task.id}) }}"> Edit Task </a> 
-            <form action="{{ path('task.validate', {id: task.id}) }}" method="post">
-                <input type="hidden">
-                <button type="submit" class="btn btn-danger btn-sm"> Validate Task </button>
-            </form>
-            <form action="{{ path('task.invalidate', {id: task.id}) }}" method="post">
-                <input type="hidden">
-                <button type="submit" class="btn btn-danger btn-sm"> Invalidate Task </button>
-            </form>
-        </p>
-    </ul>
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <h3 class="card-title">{{ task.title }}</h3>
+            <p class="card-text">{{ task.description }}</p>
+            <p class="text-muted">Périodicité: {{ task.periodicity }}</p>
+            {% if task.periodicity == 'weekly' %}
+                <p><strong>Jours:</strong>
+                    {% set days = task.days|split(',') %}
+                    {% for day in days %}
+                        <span class="badge bg-secondary">{{ day }}</span>
+                    {% endfor %}
+                </p>
+            {% endif %}
+            <div class="d-flex justify-content-between mt-3">
+                <a class="btn btn-warning btn-sm" href="{{ path('task.edit', {id: task.id}) }}">Modifier</a>
+                <div>
+                    <form action="{{ path('task.validate', {id: task.id}) }}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-success btn-sm">Valider</button>
+                    </form>
+                    <form action="{{ path('task.invalidate', {id: task.id}) }}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Invalider</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     {% endfor %}
+</div>
 {% endblock %}

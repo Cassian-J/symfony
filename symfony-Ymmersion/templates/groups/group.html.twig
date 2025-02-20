@@ -1,27 +1,38 @@
-{%extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title "groups" %}
+{% block title %}Groupes{% endblock %}
 
-{% block body%}
-    <div class="container mt-4">
-        <h2 class="mb-3">Les Membres</h2>
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-3 text-center">Les Membres</h2>
 
-        {% if users is not empty %}
-            <ul class="list-group">
-                {% for user in users %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ user.Pseudo }}
-                        {{ user.Email }}
-                        {{ user.lastConnection|date('Y-m-d H:i:s') }}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>Aucun Membres pour le moment.</p>
-        {% endif %}
-    </div>
-    <form action="{{ path('groups.delete') }}" method="post">
-        <input type="hidden" name="_method" value="DELETE">
-        <button type="submit"> Suprimmer</button>
-    </form>
+    {% if users is not empty %}
+        <ul class="list-group">
+            {% for user in users %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ user.Pseudo }}</strong> <br>
+                        <small class="text-muted">{{ user.Email }}</small>
+                    </div>
+                    <span class="badge bg-primary">{{ user.lastConnection|date('Y-m-d H:i:s') }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-center text-muted">Aucun membre pour le moment.</p>
+    {% endif %}
+</div>
+
+<div class="container text-center mt-4">
+    {% if user is same as(group) %}
+        <form action="{{ path('groups.delete') }}" method="post" class="d-inline-block">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="btn btn-danger">Supprimer</button>
+        </form>
+    {% else %}
+        <form action="{{ path('groups.quit') }}" method="post" class="d-inline-block">
+            <button type="submit" class="btn btn-danger">Quitter</button>
+        </form>
+    {% endif %}
+</div>
 {% endblock %}

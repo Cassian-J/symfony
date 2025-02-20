@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Groups;
+use App\Entity\Task;
 use Ramsey\Uuid\Uuid;
 use App\Controller\CookieController;
 
@@ -23,7 +24,7 @@ final class GroupsController extends AbstractController
     }
 
     #[Route('/groups', name: 'groups.show')]
-    public function index(Request $request,EntityManagerInterface $em): Response
+    public function group(Request $request,EntityManagerInterface $em): Response
     {
         $userUuid = $this->cookieController->getCookie($request);
         if(!is_string($userUuid )){
@@ -33,23 +34,26 @@ final class GroupsController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $em);
+        $group = $user->getGroupUuid();
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
         $users = $em->getRepository(Users::class)->findby(['GroupUuid'=>$group]);
         if (!$users) {
-            $this->addFlash('danger', 'aucun utilisateur connecté à ce groupe trouvé');
-            return $this->redirectToRoute('app_home');
+            return $this->cookieController->message('danger','aucun utilisateur connecté à ce groupe trouvé','app_home');
         }
+        $this->cookieController->updateLastConnection($request,$em);
         return $this->render('groups/group.html.twig',[
-            'users'=>$users
+            'users'=>$users,
+            'user'=>$user->getUserUuid(),
+            'group'=> $group->getCreator()
         ]);
     }
 
     #[Route('/groups/create', name: 'groups.create', methods:['GET','POST'])]
     public function create(Request $request, EntityManagerInterface $entityManager): Response
     {
+
         $group = new Groups();
         $group->setGroupUuid(Uuid::uuid4()->toString());;
         $group->setPoint(50);
@@ -62,6 +66,9 @@ final class GroupsController extends AbstractController
         $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
+        if ($user->getGroupUuid() instanceof Groups){
+            return $this->cookieController->message('danger',"vous faites deja partis d'un groupe",'groups.show');
         }
 
         $group->setCreator($user);
@@ -106,5 +113,26 @@ final class GroupsController extends AbstractController
         $em->remove($group);
         $em->flush();
         return $this->cookieController->message('success','groupe supprimé','app_home');
+    }
+    #[Route('/groups/quit', name: 'groups.quit')]
+    public function quit(Request $request, EntityManagerInterface $em)
+    {   
+        $userUuid = $this->cookieController->getCookie($request);
+        if(!is_string($userUuid )){
+            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        }
+        $user = $this->cookieController->getUserByCookie($userUuid, $em);
+        if(!$user instanceof Users){
+            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
+        $groupName = $user->getGroupUuid()->getGroupUuid();
+        $user->setGroupUuid(null);
+        $tasks = $em->getRepository(Task::class)->findby(['UserUuid'=>$user]);
+        
+        foreach($tasks as $task){
+            $em->remove($task);
+        }
+        $em->flush();
+        return $this->cookieController->message('success',"vous êtes partis du groupe $groupName",'app_admin');
     }
 }

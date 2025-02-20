@@ -1,20 +1,38 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Create Task{% endblock %}
+{% block title %}Créer une Tâche{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
-        <h1>Create new Task</h1>
-
+<div class="container mt-4">
+    <h2 class="mb-3 text-center">Créer une Nouvelle Tâche</h2>
+    <div class="card p-4 shadow-sm">
         {{ form_start(form, {'attr': {'class': 'form'}}) }}
-            {{ form_row(form.Title) }}
-            {{ form_row(form.Description) }}
-            {{ form_row(form.Color) }}
-            {{ form_row(form.Periodicity) }}
-            {{ form_row(form.Days) }}
-            {{ form_row(form.Difficulty) }}
-            {{ form_row(form.isGroupTask) }}
-            {{ form_row(form.save) }}
+            <div class="mb-3">
+                {{ form_row(form.Title, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_row(form.Description, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_row(form.Color, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_row(form.Periodicity, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_row(form.Days, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_row(form.Difficulty, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="form-check mb-3">
+                {{ form_row(form.isGroupTask, {'attr': {'class': 'form-check-input'}}) }}
+                <label class="form-check-label">Tâche de Groupe</label>
+            </div>
+            <div class="text-center">
+                {{ form_row(form.save, {'attr': {'class': 'btn btn-success'}}) }}
+            </div>
         {{ form_end(form) }}
     </div>
+</div>
 {% endblock %}

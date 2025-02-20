@@ -33,12 +33,10 @@ final class HomeController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
-        if(!$group instanceof Groups){
-            return $this->cookieController->message('danger','groupe inexistant','groups.create');
-        }
+        $group = $user->getGroupUuid();
+        
         $tasks = $entityManager->getRepository(Task::class)->findAll();
-
+        $this->cookieController->updateLastConnection($request,$entityManager);
         return $this->render('home/index.html.twig', [
             'name' => $user->getPseudo(),
             'tasks' => $tasks,
@@ -141,7 +139,6 @@ final class HomeController extends AbstractController
     #[Route('/{id}/validate-task', name: 'task.validate')]
     public function validateTask(Request $request,Task $task, EntityManagerInterface $entityManager)
     {
-
         $userUuid = $this->cookieController->getCookie($request);
         if(!is_string($userUuid )){
             return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
@@ -158,16 +155,16 @@ final class HomeController extends AbstractController
         $grouplog = new GroupLogs();
 
         switch($task->getDifficulty()){
-            case 0:
+            case 1:
                 $grouplog->setPoint(1);
                 break;
-            case 1:
+            case 2:
                 $grouplog->setPoint(2);
                 break;
-            case 2:
+            case 3:
                 $grouplog->setPoint(5);
                 break;
-            case 3:
+            case 4:
                 $grouplog->setPoint(10);
                 break;
             default:
@@ -177,17 +174,23 @@ final class HomeController extends AbstractController
         $grouplog->setTaskId($task);
         $grouplog->setUserUuid($user);
         $grouplog->setGroupUuid($group);
+        $grouplog->setDate(new \DateTime());
 
         $entityManager->persist($grouplog);
+
+        $group->setPoint($grouplog->getPoint());
+        $entityManager->persist($group);
+
         $entityManager->flush();
 
-        return $this->redirectToRoute('app_home');
+        $points = $grouplog->getPoint();
+        $point_str = (1 == $points) ? 'point' : 'points';
+        return $this->cookieController->message('success',"Congrats, you won $points $point_str",'app_home');
     }
 
     #[Route('/{id}/invalidate-task', name: 'task.invalidate')]
     public function invalidateTask(Request $request,Task $task, EntityManagerInterface $entityManager)
     {
-
         $userUuid = $this->cookieController->getCookie($request);
         if(!is_string($userUuid )){
             return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
@@ -202,16 +205,16 @@ final class HomeController extends AbstractController
         }
         $grouplog = new GroupLogs();
         switch($task->getDifficulty()){
-            case 0:
+            case 1:
                 $grouplog->setPoint(-8);
                 break;
-            case 1:
+            case 2:
                 $grouplog->setPoint(-5);
                 break;
-            case 2:
+            case 3:
                 $grouplog->setPoint(-2);
                 break;
-            case 3:
+            case 4:
                 $grouplog->setPoint(-1);
                 break;
             default:
@@ -221,10 +224,17 @@ final class HomeController extends AbstractController
         $grouplog->setTaskId($task);
         $grouplog->setUserUuid($user);
         $grouplog->setGroupUuid($group);
+        $grouplog->setDate(new \DateTime());
 
         $entityManager->persist($grouplog);
+
+        $group->setPoint($grouplog->getPoint());
+        $entityManager->persist($group);
+
         $entityManager->flush();
 
-        return $this->redirectToRoute('app_home');
+        $points = abs($grouplog->getPoint());
+        $point_str = (1 == $points) ? 'point' : 'points';
+        return $this->cookieController->message('danger',"Dang, you lost $points $point_str.",'app_home');
     }
 }

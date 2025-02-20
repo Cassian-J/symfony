@@ -3,8 +3,18 @@
 {% block title %}Create Task{% endblock %}
 
 {% block body %}
+    <div class="container mt-4">
+        <h1>Create new Task</h1>
 
-    <h1>Create new Task</h1>
-
-    {{ form(form) }}
+        {{ form_start(form, {'attr': {'class': 'form'}}) }}
+            {{ form_row(form.Title) }}
+            {{ form_row(form.Description) }}
+            {{ form_row(form.Color) }}
+            {{ form_row(form.Periodicity) }}
+            {{ form_row(form.Days) }}
+            {{ form_row(form.Difficulty) }}
+            {{ form_row(form.isGroupTask) }}
+            {{ form_row(form.save) }}
+        {{ form_end(form) }}
+    </div>
 {% endblock %}

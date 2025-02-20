@@ -17,9 +17,12 @@ use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Cookie;
 
 class RegistrationController extends AbstractController
-{
-    public function __construct(private EmailVerifier $emailVerifier)
+{   
+    private CookieController $cookieController;
+
+    public function __construct(CookieController $cookieController)
     {
+        $this->cookieController = $cookieController;
     }
 
     #[Route('/register', name: 'app_register')]
@@ -59,12 +62,7 @@ class RegistrationController extends AbstractController
 
             $entityManager->persist($user);
             $entityManager->flush();
-            $cookie = Cookie::create('user_uuid')
-                ->withValue($user->getUserUuid())
-                ->withExpires(strtotime('+30 days'))
-                ->withSecure(false)
-                ->withHttpOnly(true)
-                ->withPath('/');
+            $cookie = $this->cookieController->setCookie($user->getUserUuid());
             $response = $security->login($user, AppAuthenticator::class, 'main');
             $response->headers->setCookie($cookie);
             return $response;

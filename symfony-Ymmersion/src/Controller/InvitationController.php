@@ -14,28 +14,21 @@ use Doctrine\ORM\EntityManagerInterface;
 
 final class InvitationController extends AbstractController
 {
+    private CookieController $cookieController;
+
+    public function __construct(CookieController $cookieController)
+    {
+        $this->cookieController = $cookieController;
+    }
+
     #[Route('/invitation/send', name: 'invitation.send')]
     public function send(Request $request, EntityManagerInterface $em): Response
     {
         $invitation = new Invitation();
         
-        $userUuid = $request->cookies->get('user_uuid');
-        if (!$userUuid) {
-            $this->addFlash('error', 'Aucun Utilisateur connecter');
-            return $this->redirectToRoute('app_register');
-        }
-
-        $user = $em->getRepository(Users::class)->find($userUuid);
-        if (!$user) {
-            $this->addFlash('error', 'Aucun Utilisateur connecter');
-            return $this->redirectToRoute('app_register');
-        }
-
-        $groups = $em->getRepository(Groups::class)->findBy(['Creator' => $user]);
-        if (!$groups) {
-            $this->addFlash('error', "vous ne faites partis d'aucun groupes");
-            return $this->redirectToRoute('groups.create');
-        }
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $em);
+        $groups = $this->cookieController->getGroupsByUser($user, $em);
         
         $invitation->setWhichGroup($groups[0]);
         $invitation->setSender($user);
@@ -64,17 +57,8 @@ final class InvitationController extends AbstractController
     #[Route('/invitation/get', name: 'invitation.get')]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $userUuid = $request->cookies->get('user_uuid');
-        if (!$userUuid) {
-            $this->addFlash('error', "utilisateur non connecter");
-            return $this->redirectToRoute('app_register');
-        }
-
-        $user = $em->getRepository(Users::class)->find($userUuid);
-        if (!$user) {
-            $this->addFlash('error', "utilisateur non connecter");
-            return $this->redirectToRoute('app_register');
-        }
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $em);
 
         $invitations = $em->getRepository(Invitation::class)->findBy(['Recever' => $user]);
         if (empty($invitations)) {

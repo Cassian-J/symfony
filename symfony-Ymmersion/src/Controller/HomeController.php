@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Task;
-use Ramsey\Uuid\Uuid;
+use App\Entity\GroupLogs;
+use App\Entity\Users;
+use App\Entity\Groups;
 use App\Form\TaskType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,9 +26,17 @@ final class HomeController extends AbstractController
     public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
         $userUuid = $this->cookieController->getCookie($request);
+        if(!is_string($userUuid )){
+            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        }
         $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        if(!$user instanceof Users){
+            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
         $group = $this->cookieController->getGroupsByUser($user, $entityManager);
-
+        if(!$group instanceof Groups){
+            return $this->cookieController->message('danger','groupe inexistant','groups.create');
+        }
         $tasks = $entityManager->getRepository(Task::class)->findAll();
 
         return $this->render('home/index.html.twig', [
@@ -39,15 +49,19 @@ final class HomeController extends AbstractController
     public function editTask(Request $request,Task $task, EntityManagerInterface $entityManager)
     {
         $userUuid = $this->cookieController->getCookie($request);
+        if(!is_string($userUuid )){
+            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        }
         $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        if(!$user instanceof Users){
+            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
         $group = $this->cookieController->getGroupsByUser($user, $entityManager);
-
+        if(!$group instanceof Groups){
+            return $this->cookieController->message('danger','groupe inexistant','groups.create');
+        }
         if ($task->getUserUuid()!=$user){
-            $this->addFlash(
-               'danger',
-               'This is not your task'
-            );
-            return $this->redirectToRoute('app_home');
+            return $this->cookieController->message('danger','This is not your task','app_home');
         }
 
         $form = $this->createForm(TaskType::class, $task);
@@ -55,11 +69,7 @@ final class HomeController extends AbstractController
         
         if ($form->isSubmitted() && $form->isValid()){
             $entityManager->flush();
-            $this->addFlash(
-               'success',
-               'Task successfully updated'
-            );
-            return $this->redirectToRoute('app_home');
+            return $this->cookieController->message('success','Task successfully updated','app_home');
         }
         
         return $this->render('home/editTask.html.twig', [
@@ -72,9 +82,17 @@ final class HomeController extends AbstractController
     public function createTask(Request $request, EntityManagerInterface $entityManager)
     {
         $userUuid = $this->cookieController->getCookie($request);
+        if(!is_string($userUuid )){
+            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        }
         $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        if(!$user instanceof Users){
+            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
         $group = $this->cookieController->getGroupsByUser($user, $entityManager);
-
+        if(!$group instanceof Groups){
+            return $this->cookieController->message('danger','groupe inexistant','groups.create');
+        }
         $task = new Task();
 
         
@@ -94,11 +112,7 @@ final class HomeController extends AbstractController
 
             $entityManager->persist($task);
             $entityManager->flush();
-            $this->addFlash(
-               'success',
-               'Task successfully created'
-            );
-            return $this->redirectToRoute('app_home');
+            return $this->cookieController->message('success','Task successfully created','app_home');
         }
 
         return $this->render('home/createTask.html.twig', [
@@ -110,24 +124,24 @@ final class HomeController extends AbstractController
     public function deleteTask(Request $request,Task $task, EntityManagerInterface $entityManager)
     {
         $userUuid = $this->cookieController->getCookie($request);
+        if(!is_string($userUuid )){
+            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        }
         $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        if(!$user instanceof Users){
+            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
         $group = $this->cookieController->getGroupsByUser($user, $entityManager);
-
+        if(!$group instanceof Groups){
+            return $this->cookieController->message('danger','groupe inexistant','groups.create');
+        }
         if ($task->getUserUuid()!=$user){
-            $this->addFlash(
-               'danger',
-               'This is not your task'
-            );
-            return $this->redirectToRoute('app_home');
+            return $this->cookieController->message('danger','This is not your task','app_home');
         }
 
         $entityManager->remove($task);
         $entityManager->flush();
-        $this->addFlash(
-           'success',
-           'Task successfully deleted'
-        );
-        return $this->redirectToRoute('app_home');
+        return $this->cookieController->message('success','Task successfully deleted','app_home');
     }
 
     #[Route('/{id}/validate-task', name: 'task.validate')]
@@ -135,9 +149,17 @@ final class HomeController extends AbstractController
     {
 
         $userUuid = $this->cookieController->getCookie($request);
+        if(!is_string($userUuid )){
+            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        }
         $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        if(!$user instanceof Users){
+            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
         $group = $this->cookieController->getGroupsByUser($user, $entityManager);
-
+        if(!$group instanceof Groups){
+            return $this->cookieController->message('danger','groupe inexistant','groups.create');
+        }
         $grouplog = new GroupLogs();
         switch($task->getDifficulty()){
             case 0:
@@ -171,9 +193,17 @@ final class HomeController extends AbstractController
     {
 
         $userUuid = $this->cookieController->getCookie($request);
+        if(!is_string($userUuid )){
+            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        }
         $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        if(!$user instanceof Users){
+            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
         $group = $this->cookieController->getGroupsByUser($user, $entityManager);
-
+        if(!$group instanceof Groups){
+            return $this->cookieController->message('danger','groupe inexistant','groups.create');
+        }
         $grouplog = new GroupLogs();
         switch($task->getDifficulty()){
             case 0:

@@ -14,27 +14,18 @@ final class CookieController extends AbstractController
     public function getCookie(Request $request)
     {
         $userUuid = $request->cookies->get('user_uuid');
-        if (!$userUuid) {
-            $this->addFlash('danger', 'Utilisateur non authentifié');
-            return $this->redirectToRoute('app_register');
-        }
         return $userUuid;
     }
     public function getUserByCookie(string $userUuid,EntityManagerInterface $em)
     {
         $user = $em->getRepository(Users::class)->find($userUuid);
-        if (!$user) {
-            $this->addFlash('danger', 'Utilisateur introuvable');
-            return $this->redirectToRoute('app_register');
-        }
         return $user;
     }
     public function getGroupsByUser(Users $user,EntityManagerInterface $em)
     {
         $groups = $em->getRepository(Groups::class)->findby(['Creator'=>$user]);
-        if (!$groups) {
-            $this->addFlash('danger', 'groupe introuvable');
-            return $this->redirectToRoute('groups.create');
+        if ($groups===[]){
+            return null;
         }
         return $groups[0];
     }
@@ -47,5 +38,10 @@ final class CookieController extends AbstractController
                 ->withHttpOnly(true)
                 ->withPath('/');
         return $cookie;
+    }
+    public function message(string $type,string $message,string $route)
+    {
+        $this->addFlash($type, $message);
+        return $this->redirectToRoute($route);
     }
 }

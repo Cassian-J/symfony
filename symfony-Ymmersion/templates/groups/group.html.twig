@@ -1,8 +1,25 @@
 {%extends 'base.html.twig' %}
 
-{% block title "create groups" %}
+{% block title "groups" %}
 
 {% block body%}
+    <div class="container mt-4">
+        <h2 class="mb-3">Les Membres</h2>
+
+        {% if users is not empty %}
+            <ul class="list-group">
+                {% for user in users %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ user.Pseudo }}
+                        {{ user.Email }}
+                        {{user.lastConnection}}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Aucun Membres pour le moment.</p>
+        {% endif %}
+    </div>
     <form action="{{ path('groups.delete') }}" method="post">
         <input type="hidden" name="_method" value="DELETE">
         <button type="submit"> Suprimmer</button>

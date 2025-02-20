@@ -61,9 +61,9 @@ final class GroupsController extends AbstractController
     {   
         $userUuid = $this->cookieController->getCookie($request);
         $user = $this->cookieController->getUserByCookie($userUuid, $em);
-        $groups = $this->cookieController->getGroupsByUser($user, $em);
+        $group = $this->cookieController->getGroupsByUser($user, $em);
 
-        $users = $em->getRepository(Users::class)->findby(['GroupUuid'=>$groups[0]]);
+        $users = $em->getRepository(Users::class)->findby(['GroupUuid'=>$group]);
         if (!$users) {
             $this->addFlash('error', 'aucun utilisateur connecté à ce groupe trouvé');
             return $this->redirectToRoute('app_home');
@@ -71,7 +71,7 @@ final class GroupsController extends AbstractController
         foreach($users as $usertmp){
             $usertmp->setGroupUuid(null);
         }
-        $em->remove($groups[0]);
+        $em->remove($group);
         $em->flush();
         return $this->redirectToRoute('app_home');
     }

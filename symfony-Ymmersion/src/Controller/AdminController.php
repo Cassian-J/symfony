@@ -27,7 +27,7 @@ final class AdminController extends AbstractController
     {
         /** @var Users $user */
         $user = $this->getUser();
-
+        $this->cookieController->updateLastConnection($request,$entityManager);
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
@@ -116,7 +116,6 @@ final class AdminController extends AbstractController
     {
         /** @var Users $user */
         $user = $this->getUser();
-        
         if (!$user || !$user->getProfilePicture()) {
             // Retourner une image par défaut
             $defaultImagePath = $this->getParameter('kernel.project_dir') . '/public/images/default-profile.jpg';

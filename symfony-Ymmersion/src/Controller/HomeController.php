@@ -33,10 +33,8 @@ final class HomeController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
-        if(!$group instanceof Groups){
-            return $this->cookieController->message('danger','groupe inexistant','groups.create');
-        }
+        $group = $user->getGroupUuid();
+        
         $tasks = $entityManager->getRepository(Task::class)->findAll();
         $this->cookieController->updateLastConnection($request,$entityManager);
         return $this->render('home/index.html.twig', [

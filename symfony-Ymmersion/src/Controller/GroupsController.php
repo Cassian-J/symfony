@@ -24,7 +24,7 @@ final class GroupsController extends AbstractController
     }
 
     #[Route('/groups', name: 'groups.show')]
-    public function index(Request $request,EntityManagerInterface $em): Response
+    public function group(Request $request,EntityManagerInterface $em): Response
     {
         $userUuid = $this->cookieController->getCookie($request);
         if(!is_string($userUuid )){
@@ -44,13 +44,16 @@ final class GroupsController extends AbstractController
         }
         $this->cookieController->updateLastConnection($request,$em);
         return $this->render('groups/group.html.twig',[
-            'users'=>$users
+            'users'=>$users,
+            'user'=>$user->getUserUuid(),
+            'group'=> $group->getCreator()
         ]);
     }
 
     #[Route('/groups/create', name: 'groups.create', methods:['GET','POST'])]
     public function create(Request $request, EntityManagerInterface $entityManager): Response
     {
+
         $group = new Groups();
         $group->setGroupUuid(Uuid::uuid4()->toString());;
         $group->setPoint(50);
@@ -63,6 +66,9 @@ final class GroupsController extends AbstractController
         $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
+        if ($user->getGroupUuid() instanceof Groups){
+            return $this->cookieController->message('danger',"vous faites deja partis d'un groupe",'groups.show');
         }
 
         $group->setCreator($user);
@@ -119,23 +125,10 @@ final class GroupsController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $em);
-        if(!$group instanceof Groups){
-            $groupName = $user->getGroupUuid()->getGroupUuid();
-            $user->setGroupUuid(null);
-            $tasks = $em->getRepository(Task::class)->findby(['UserUuid'=>$user]);
-        }else{
-            $users = $em->getRepository(Users::class)->findby(['GroupUuid'=>$group]);
-            $tasks = $em->getRepository(Task::class)->findby(['GroupUuid'=>$group]);
-            if (!$users) {
-                return $this->cookieController->message('danger','aucun utilisateur connecté à ce groupe trouvé','app_home');
-            }
-            foreach($users as $usertmp){
-                $usertmp->setGroupUuid(null);
-            }
-            $groupName = $group->getName();
-            $em->remove($group);
-        }
+        $groupName = $user->getGroupUuid()->getGroupUuid();
+        $user->setGroupUuid(null);
+        $tasks = $em->getRepository(Task::class)->findby(['UserUuid'=>$user]);
+        
         foreach($tasks as $task){
             $em->remove($task);
         }

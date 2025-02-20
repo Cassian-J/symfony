@@ -15,11 +15,8 @@ class GroupType extends AbstractType
     {
         $builder
             ->add('Name', TextType::class, [
-                'label' => "Group's name",
+                'label' => "Group's name : ",
                 'required' => true,
-            ])
-            ->add('save',SubmitType::class, [
-                'label' => 'create'
             ]);
     }
 

@@ -24,4 +24,7 @@
         <input type="hidden" name="_method" value="DELETE">
         <button type="submit"> Suprimmer</button>
     </form>
+    <form action="{{ path('groups.quit') }}" method="post">
+        <button type="submit"> Quittez</button>
+    </form>
 {% endblock %}

@@ -2,15 +2,23 @@
 
 namespace App\Controller;
 
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Users;
 use App\Entity\Groups;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Cookie;
+use function Symfony\Component\Clock\now;
 final class CookieController extends AbstractController
 {
-    
+    public function updateLastConnection(Request $request,EntityManagerInterface $em)
+    {
+        $now = new DateTimeImmutable();
+        $userUuid=$this->getCookie($request);
+        $user = $this->getUserByCookie($userUuid,$em);
+        $user->setLastConnection($now);
+    }
     public function getCookie(Request $request)
     {
         $userUuid = $request->cookies->get('user_uuid');

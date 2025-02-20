@@ -38,7 +38,7 @@ final class HomeController extends AbstractController
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
         $tasks = $entityManager->getRepository(Task::class)->findAll();
-
+        $this->cookieController->updateLastConnection($request,$entityManager);
         return $this->render('home/index.html.twig', [
             'name' => $user->getPseudo(),
             'tasks' => $tasks,
@@ -140,7 +140,6 @@ final class HomeController extends AbstractController
     #[Route('/{id}/validate-task', name: 'task.validate')]
     public function validateTask(Request $request,Task $task, EntityManagerInterface $entityManager)
     {
-
         $userUuid = $this->cookieController->getCookie($request);
         if(!is_string($userUuid )){
             return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
@@ -184,7 +183,6 @@ final class HomeController extends AbstractController
     #[Route('/{id}/invalidate-task', name: 'task.invalidate')]
     public function invalidateTask(Request $request,Task $task, EntityManagerInterface $entityManager)
     {
-
         $userUuid = $this->cookieController->getCookie($request);
         if(!is_string($userUuid )){
             return $this->cookieController->message('danger','utilisateur non authentifié','app_register');

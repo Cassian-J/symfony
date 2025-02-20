@@ -20,7 +20,8 @@ class InvitationType extends AbstractType
                 'choice_label' => 'Pseudo',
                 'placeholder' => 'Sélectionner un utilisateur',
             ])
-            ->add('save', SubmitType::class);
+            ->add('accept', SubmitType::class)
+            ->add('refuse', SubmitType::class);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

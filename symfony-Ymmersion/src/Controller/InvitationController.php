@@ -71,13 +71,45 @@ final class InvitationController extends AbstractController
         }
 
         $invitations = $em->getRepository(Invitation::class)->findBy(['Recever' => $user]);
-        if (!$invitations) {
-            throw new \Exception('Aucun groupe trouvé pour cet utilisateur');
+        if (empty($invitations)) {
+            return $this->render('invitation/get.html.twig', [
+                'invitation' => null
+            ]);
         }
         
 
         return $this->render('invitation/get.html.twig',[
             'invitation' => $invitations
         ]);
+    }
+    #[Route('/invitation/accept/{id}', name: 'invitation.accept', methods: ['POST'])]
+    public function acceptInvitation(int $id, EntityManagerInterface $em): Response
+    {
+        $invitation = $em->getRepository(Invitation::class)->find($id);
+        if (!$invitation) {
+            throw $this->createNotFoundException('Invitation introuvable');
+        }
+
+        $user = $invitation->getRecever();
+        $user->setGroupUuid($invitation->getWhichGroup());
+
+        $em->remove($invitation);
+        $em->flush();
+
+        return $this->redirectToRoute('invitation.get');
+    }
+
+    #[Route('/invitation/reject/{id}', name: 'invitation.reject', methods: ['POST'])]
+    public function rejectInvitation(int $id, EntityManagerInterface $em): Response
+    {
+        $invitation = $em->getRepository(Invitation::class)->find($id);
+        if (!$invitation) {
+            throw $this->createNotFoundException('Invitation introuvable');
+        }
+
+        $em->remove($invitation);
+        $em->flush();
+
+        return $this->redirectToRoute('invitation.get');
     }
 }

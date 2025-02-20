@@ -28,9 +28,9 @@ final class InvitationController extends AbstractController
         
         $userUuid = $this->cookieController->getCookie($request);
         $user = $this->cookieController->getUserByCookie($userUuid, $em);
-        $groups = $this->cookieController->getGroupsByUser($user, $em);
+        $group = $this->cookieController->getGroupsByUser($user, $em);
         
-        $invitation->setWhichGroup($groups[0]);
+        $invitation->setWhichGroup($group);
         $invitation->setSender($user);
 
         $form = $this->createForm(InvitationType::class, $invitation);

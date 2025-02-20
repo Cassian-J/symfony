@@ -154,16 +154,12 @@ class Task
 
     public function setDays(?array $Days): static
     {
-<<<<<<< HEAD
         if ($Days) {
             $this->Days = implode(',', $Days);
         } else {
             $this->Days = null;
         }
         
-=======
-        $this->Days ? implode(',', $Days) : null;
->>>>>>> main
 
         return $this;
     }

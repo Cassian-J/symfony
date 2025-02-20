@@ -5,9 +5,7 @@
 {% block body %}
     <h1>{{task.title}}</h1>
 
-    {{ form_start(form) }}
-    {{ form_widget(form) }}
-    {{ form_end(form) }}
+    {{ form(form) }}
 
     <form action="{{ path('task.delete', {id: task.id}) }}" method="post">
         <input type="hidden" name="_method" value="DELETE">

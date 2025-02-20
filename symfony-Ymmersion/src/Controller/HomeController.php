@@ -4,12 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Task;
 use App\Entity\GroupLogs;
-<<<<<<< HEAD
-use Ramsey\Uuid\Uuid;
-=======
 use App\Entity\Users;
 use App\Entity\Groups;
->>>>>>> main
 use App\Form\TaskType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -72,12 +68,8 @@ final class HomeController extends AbstractController
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()){
-            $days = $form->get('Days')->getData();
-            if ($days) {
-                $task->setDays($days);
-            } else {
-                $task->setDays(null);
-            }
+
+            $entityManager->persist($task);
             $entityManager->flush();
             return $this->cookieController->message('success','Task successfully updated','app_home');
         }
@@ -163,7 +155,9 @@ final class HomeController extends AbstractController
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
+
         $grouplog = new GroupLogs();
+
         switch($task->getDifficulty()){
             case 0:
                 $grouplog->setPoint(1);

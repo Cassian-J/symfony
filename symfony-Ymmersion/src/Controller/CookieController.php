@@ -36,7 +36,7 @@ final class CookieController extends AbstractController
             $this->addFlash('error', 'groupe introuvable');
             return $this->redirectToRoute('groups.create');
         }
-        return $groups;
+        return $groups[0];
     }
     public function setCookie(string $user)
     {

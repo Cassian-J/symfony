@@ -13,6 +13,13 @@ use Symfony\Component\HttpFoundation\Request;
 
 final class HomeController extends AbstractController
 {
+    private CookieController $cookieController;
+
+    public function __construct(CookieController $cookieController)
+    {
+        $this->cookieController = $cookieController;
+    }
+
     #[Route('/', name: 'app_home')]
     public function index(EntityManagerInterface $entityManager): Response
     {
@@ -119,6 +126,10 @@ final class HomeController extends AbstractController
     public function invalidateTask(Request $request,Task $task, EntityManagerInterface $entityManager)
     {
 
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        $group = $this->cookieController->getGroupsByUser($user, $em);
+
         $grouplog = new GroupLogs();
         switch($task->getDifficulty()){
             case 0:
@@ -138,8 +149,8 @@ final class HomeController extends AbstractController
                 break;
         }
         $grouplog->setTaskId($task);
-        $grouplog->setUserUuid();
-        $grouplog->setGroupUuid();
+        $grouplog->setUserUuid($user);
+        $grouplog->setGroupUuid($group);
 
         $entityManager->persist($grouplog);
         $entityManager->flush();

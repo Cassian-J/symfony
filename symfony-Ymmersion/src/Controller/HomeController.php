@@ -55,10 +55,15 @@ final class HomeController extends AbstractController
     #[Route('/create-task', name: 'task.create')]
     public function createTask(Request $request, EntityManagerInterface $entityManager)
     {
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        $group = $this->cookieController->getGroupsByUser($user, $em);
+
         $task = new Task();
 
         #TODO SET USER UUID AND GROUP UUID AUTOMATICALY WHEN CREATING TASKS
-        $task->setUserUuid("test");
+        $task->setUserUuid($user);
+        $task->setGroupUuid($group);
 
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
@@ -94,6 +99,11 @@ final class HomeController extends AbstractController
     #[Route('/{id}/validate-task', name: 'task.validate')]
     public function validateTask(Request $request,Task $task, EntityManagerInterface $entityManager)
     {
+
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        $group = $this->cookieController->getGroupsByUser($user, $em);
+
         $grouplog = new GroupLogs();
         switch($task->getDifficulty()){
             case 0:
@@ -113,8 +123,8 @@ final class HomeController extends AbstractController
                 break;
         }
         $grouplog->setTaskId($task);
-        $grouplog->setUserUuid();
-        $grouplog->setGroupUuid();
+        $grouplog->setUserUuid($user);
+        $grouplog->setGroupUuid($group);
 
         $entityManager->persist($grouplog);
         $entityManager->flush();

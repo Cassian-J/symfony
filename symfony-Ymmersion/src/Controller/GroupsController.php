@@ -28,12 +28,14 @@ final class GroupsController extends AbstractController
         $group->setPoint(50);
         $userUuid = $request->cookies->get('user_uuid');
         if (!$userUuid) {
-            throw new \Exception('Utilisateur non authentifié');
+            $this->addFlash('error', 'Utilisateur non authentifié');
+            return $this->redirectToRoute('app_register');
         }
 
         $user = $entityManager->getRepository(Users::class)->find($userUuid);
         if (!$user) {
-            throw new \Exception('Utilisateur introuvable');
+            $this->addFlash('error', 'Utilisateur introuvable');
+            return $this->redirectToRoute('app_register');
         }
 
         $group->setCreator($user);
@@ -58,20 +60,24 @@ final class GroupsController extends AbstractController
     {   
         $userUuid = $request->cookies->get('user_uuid');
         if (!$userUuid) {
-            throw new \Exception('Utilisateur non authentifié');
+            $this->addFlash('error', 'Utilisateur non authentifié');
+            return $this->redirectToRoute('app_register');
         }
 
         $user = $em->getRepository(Users::class)->find($userUuid);
         if (!$user) {
-            throw new \Exception('Utilisateur introuvable');
+            $this->addFlash('error', 'Utilisateur introuvable');
+            return $this->redirectToRoute('app_register');
         }
         $groups = $em->getRepository(Groups::class)->findby(['Creator'=>$user]);
         if (!$groups) {
-            throw new \Exception('Utilisateur introuvable');
+            $this->addFlash('error', 'groupe introuvable');
+            return $this->redirectToRoute('groups.create');
         }
         $users = $em->getRepository(Users::class)->findby(['GroupUuid'=>$groups[0]]);
         if (!$users) {
-            throw new \Exception('Utilisateur introuvable');
+            $this->addFlash('error', 'aucun utilisateur connecté à ce groupe trouvé');
+            return $this->redirectToRoute('app_home');
         }
         foreach($users as $usertmp){
             $usertmp->setGroupUuid(null);

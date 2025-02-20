@@ -37,11 +37,9 @@ class RegistrationController extends AbstractController
             /** @var string $plainPassword */
             $plainPassword = $form->get('plainPassword')->getData();
             
-            // Set email and pseudo from the form
             $user->setEmail($form->get('email')->getData());
             $user->setPseudo($form->get('pseudo')->getData());
             
-            // Check if email or pseudo already exists
             $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['Email' => $user->getEmail()]);
             if ($existingUser) {
                 $this->addFlash('error', 'Cet email est déjà utilisé par un autre utilisateur.');
@@ -54,20 +52,17 @@ class RegistrationController extends AbstractController
                 return $this->redirectToRoute('app_register');
             }
 
-            // encode the plain password
             $user->setPwd($userPasswordHasher->hashPassword($user, $plainPassword));
 
-            // Set UUID manually
             $user->setUserUuid(Uuid::uuid4()->toString());
-            // Set last connection
             $user->setLastConnection(new \DateTime());
 
             $entityManager->persist($user);
             $entityManager->flush();
             $cookie = Cookie::create('user_uuid')
                 ->withValue($user->getUserUuid())
-                ->withExpires(strtotime('+30 days')) // Expire après 30 jours
-                ->withSecure(false) // Mettre à true en production (HTTPS)
+                ->withExpires(strtotime('+30 days'))
+                ->withSecure(false)
                 ->withHttpOnly(true)
                 ->withPath('/');
             $response = $security->login($user, AppAuthenticator::class, 'main');

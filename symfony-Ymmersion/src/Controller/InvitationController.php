@@ -21,17 +21,20 @@ final class InvitationController extends AbstractController
         
         $userUuid = $request->cookies->get('user_uuid');
         if (!$userUuid) {
-            throw new \Exception('Utilisateur non authentifié');
+            $this->addFlash('error', 'Aucun Utilisateur connecter');
+            return $this->redirectToRoute('app_register');
         }
 
         $user = $em->getRepository(Users::class)->find($userUuid);
         if (!$user) {
-            throw new \Exception('Utilisateur introuvable');
+            $this->addFlash('error', 'Aucun Utilisateur connecter');
+            return $this->redirectToRoute('app_register');
         }
 
         $groups = $em->getRepository(Groups::class)->findBy(['Creator' => $user]);
         if (!$groups) {
-            throw new \Exception('Aucun groupe trouvé pour cet utilisateur');
+            $this->addFlash('error', "vous ne faites partis d'aucun groupes");
+            return $this->redirectToRoute('groups.create');
         }
         
         $invitation->setWhichGroup($groups[0]);
@@ -43,7 +46,8 @@ final class InvitationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $recever = $invitation->getRecever();
             if (!$recever) {
-                throw new \Exception('Utilisateur destinataire introuvable');
+                $this->addFlash('error', "utilisateur inconnu");
+                return $this->redirectToRoute('invitation.send');
             }
 
             $em->persist($invitation);
@@ -62,12 +66,14 @@ final class InvitationController extends AbstractController
     {
         $userUuid = $request->cookies->get('user_uuid');
         if (!$userUuid) {
-            throw new \Exception('Utilisateur non authentifié');
+            $this->addFlash('error', "utilisateur non connecter");
+            return $this->redirectToRoute('app_register');
         }
 
         $user = $em->getRepository(Users::class)->find($userUuid);
         if (!$user) {
-            throw new \Exception('Utilisateur introuvable');
+            $this->addFlash('error', "utilisateur non connecter");
+            return $this->redirectToRoute('app_register');
         }
 
         $invitations = $em->getRepository(Invitation::class)->findBy(['Recever' => $user]);
@@ -87,7 +93,8 @@ final class InvitationController extends AbstractController
     {
         $invitation = $em->getRepository(Invitation::class)->find($id);
         if (!$invitation) {
-            throw $this->createNotFoundException('Invitation introuvable');
+            $this->addFlash('error', 'Invitation introuvable');
+            return $this->redirectToRoute('invitation.get');
         }
 
         $user = $invitation->getRecever();
@@ -104,7 +111,8 @@ final class InvitationController extends AbstractController
     {
         $invitation = $em->getRepository(Invitation::class)->find($id);
         if (!$invitation) {
-            throw $this->createNotFoundException('Invitation introuvable');
+            $this->addFlash('error', 'Invitation introuvable');
+            return $this->redirectToRoute('invitation.get');
         }
 
         $em->remove($invitation);

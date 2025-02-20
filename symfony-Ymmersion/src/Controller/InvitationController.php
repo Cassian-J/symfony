@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Invitation;
 use App\Entity\Users;
+use App\Entity\Groups;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class InvitationController extends AbstractController
@@ -24,8 +25,17 @@ final class InvitationController extends AbstractController
     public function send(Request $request, EntityManagerInterface $em): Response
     {
         $userUuid = $this->cookieController->getCookie($request);
+        if(!is_string($userUuid )){
+            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        }
         $user = $this->cookieController->getUserByCookie($userUuid, $em);
+        if(!$user instanceof Users){
+            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
         $group = $this->cookieController->getGroupsByUser($user, $em);
+        if(!$group instanceof Groups){
+            return $this->cookieController->message('danger','groupe inexistant','groups.create');
+        }
         $invitation = new Invitation();
         $form = $this->createForm(InvitationType::class, $invitation);
         $form->handleRequest($request);
@@ -35,8 +45,7 @@ final class InvitationController extends AbstractController
             $recever = $em->getRepository(Users::class)->findOneBy(['Pseudo' => $pseudo]);
 
             if (!$recever) {
-                $this->addFlash('error', "Utilisateur '$pseudo' introuvable.");
-                return $this->redirectToRoute('invitation_send');
+                return $this->cookieController->message('danger',"Utilisateur '$pseudo' introuvable.",'invitation.send');
             }
 
             $invitation->setRecever($recever);
@@ -46,8 +55,7 @@ final class InvitationController extends AbstractController
             $em->persist($invitation);
             $em->flush();
 
-            $this->addFlash('success', "Invitation envoyée à $pseudo !");
-            return $this->redirectToRoute('app_home');
+            return $this->cookieController->message('success',"Invitation envoyée à $pseudo !",'app_home');
         }
 
         return $this->render('invitation/send.html.twig', [
@@ -59,7 +67,13 @@ final class InvitationController extends AbstractController
     public function index(Request $request, EntityManagerInterface $em): Response
     {
         $userUuid = $this->cookieController->getCookie($request);
+        if(!is_string($userUuid )){
+            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        }
         $user = $this->cookieController->getUserByCookie($userUuid, $em);
+        if(!$user instanceof Users){
+            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
 
         $invitations = $em->getRepository(Invitation::class)->findBy(['Recever' => $user]);
         if (empty($invitations)) {
@@ -78,8 +92,7 @@ final class InvitationController extends AbstractController
     {
         $invitation = $em->getRepository(Invitation::class)->find($id);
         if (!$invitation) {
-            $this->addFlash('error', 'Invitation introuvable');
-            return $this->redirectToRoute('invitation.get');
+            return $this->cookieController->message('danger','Invitation introuvable','invitation.get');
         }
 
         $user = $invitation->getRecever();
@@ -88,21 +101,22 @@ final class InvitationController extends AbstractController
         $em->remove($invitation);
         $em->flush();
 
-        return $this->redirectToRoute('invitation.get');
+        return $this->cookieController->message('success','Invitation accepté','invitation.get');
     }
+    
 
     #[Route('/invitation/reject/{id}', name: 'invitation.reject', methods: ['POST'])]
     public function rejectInvitation(int $id, EntityManagerInterface $em): Response
     {
         $invitation = $em->getRepository(Invitation::class)->find($id);
         if (!$invitation) {
-            $this->addFlash('error', 'Invitation introuvable');
-            return $this->redirectToRoute('invitation.get');
+            return $this->cookieController->message('danger','Invitation introuvable','invitation.get');
         }
 
         $em->remove($invitation);
         $em->flush();
 
-        return $this->redirectToRoute('invitation.get');
+        return $this->cookieController->message('success','Invitation refusé','invitation.get');
     }
 }
+

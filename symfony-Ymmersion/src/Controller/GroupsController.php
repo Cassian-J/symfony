@@ -26,12 +26,20 @@ final class GroupsController extends AbstractController
     public function index(Request $request,EntityManagerInterface $em): Response
     {
         $userUuid = $this->cookieController->getCookie($request);
+        if(!is_string($userUuid )){
+            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        }
         $user = $this->cookieController->getUserByCookie($userUuid, $em);
+        if(!$user instanceof Users){
+            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
         $group = $this->cookieController->getGroupsByUser($user, $em);
-
+        if(!$group instanceof Groups){
+            return $this->cookieController->message('danger','groupe inexistant','groups.create');
+        }
         $users = $em->getRepository(Users::class)->findby(['GroupUuid'=>$group]);
         if (!$users) {
-            $this->addFlash('error', 'aucun utilisateur connecté à ce groupe trouvé');
+            $this->addFlash('danger', 'aucun utilisateur connecté à ce groupe trouvé');
             return $this->redirectToRoute('app_home');
         }
         return $this->render('groups/group.html.twig',[
@@ -48,7 +56,13 @@ final class GroupsController extends AbstractController
         $userUuid = $request->cookies->get('user_uuid');
 
         $userUuid = $this->cookieController->getCookie($request);
+        if(!is_string($userUuid )){
+            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        }
         $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        if(!$user instanceof Users){
+            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
 
         $group->setCreator($user);
         $form = $this->createForm(GroupType::class, $group);
@@ -58,8 +72,7 @@ final class GroupsController extends AbstractController
             $user->setGroupUuid($group);
             $entityManager->persist($group);
             $entityManager->flush();
-
-            return $this->redirectToRoute('app_home');
+            return $this->cookieController->message('success','groupe créé','app_home');
         }
 
         return $this->render('groups/create.html.twig', [
@@ -71,19 +84,27 @@ final class GroupsController extends AbstractController
     public function delete(Request $request, EntityManagerInterface $em)
     {   
         $userUuid = $this->cookieController->getCookie($request);
+        if(!is_string($userUuid )){
+            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        }
         $user = $this->cookieController->getUserByCookie($userUuid, $em);
+        if(!$user instanceof Users){
+            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        }
         $group = $this->cookieController->getGroupsByUser($user, $em);
+        if(!$group instanceof Groups){
+            return $this->cookieController->message('danger','groupe inexistant','groups.create');
+        }
 
         $users = $em->getRepository(Users::class)->findby(['GroupUuid'=>$group]);
         if (!$users) {
-            $this->addFlash('error', 'aucun utilisateur connecté à ce groupe trouvé');
-            return $this->redirectToRoute('app_home');
+            return $this->cookieController->message('danger','aucun utilisateur connecté à ce groupe trouvé','app_home');
         }
         foreach($users as $usertmp){
             $usertmp->setGroupUuid(null);
         }
         $em->remove($group);
         $em->flush();
-        return $this->redirectToRoute('app_home');
+        return $this->cookieController->message('success','groupe supprimé','app_home');
     }
 }

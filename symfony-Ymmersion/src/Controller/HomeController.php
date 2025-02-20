@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Task;
+use App\Entity\GroupLogs;
 use Ramsey\Uuid\Uuid;
 use App\Form\TaskType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -76,21 +77,21 @@ final class HomeController extends AbstractController
         $group = $this->cookieController->getGroupsByUser($user, $entityManager);
 
         $task = new Task();
-
         
-
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
-        
+
         if ($form->isSubmitted() && $form->isValid()){
             $task->setUserUuid($user);
             $task->setGroupUuid($group);
             $task->setCreatedAt(new \DateTimeImmutable());
 
-            $days = $form->get('Days')->getData();
-            if ($days) {
-                $task->setDays(implode(',', $days));
-            }
+            //$days = $form->get('Days')->getData();
+            // if ($days) {
+            //     $task->setDays(implode(',', $days));
+            // } else {
+            //     $habit->setDays(null); // Or an empty string '' if you prefer
+            // }
 
             $entityManager->persist($task);
             $entityManager->flush();

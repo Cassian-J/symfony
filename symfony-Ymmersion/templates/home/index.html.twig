@@ -14,9 +14,9 @@
         <h3>{{task.title}}</h3>
         <p>{{task.description}}</p>
         <p>{{task.periodicity}}</p>
-        {% if habit.periodicity == 'weekly' %}
+        {% if task.periodicity == 'weekly' %}
             <p>Days:
-                {% set days = habit.days|split(',') %}
+                {% set days = task.days|split(',') %}
                 {% for day in days %}
                     {{ day }}
                 {% endfor %}

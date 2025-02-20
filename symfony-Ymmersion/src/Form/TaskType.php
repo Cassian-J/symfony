@@ -11,6 +11,8 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ColorType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -19,9 +21,15 @@ class TaskType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('Title')
-            ->add('Description')
-            ->add('Color', ColorType::class)
+            ->add('Title', TextType::class, [
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('Description', TextareaType::class, [
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('Color', ColorType::class, [
+                'attr' => ['class' => 'form-control'],
+            ])
             ->add('Periodicity', ChoiceType::class, [
                 'choices' => [
                     'Daily' => 'daily',
@@ -29,6 +37,7 @@ class TaskType extends AbstractType
                 ],
                 'expanded' => true,
                 'multiple' => false,
+                'attr' => ['class' => 'form-check-inline'],
             ])
             ->add('Days', ChoiceType::class, [
                 'choices' => [
@@ -43,7 +52,7 @@ class TaskType extends AbstractType
                 'expanded' => true,
                 'multiple' => true,
                 'required' => false,
-                'attr' => ['class' => 'weekly-days-selector'], // Add a class for easy JS selection
+                'attr' => ['class' => 'weekly-days-selector form-check-inline'],
             ])
             ->add('Difficulty', ChoiceType::class, [
                 'choices' => [
@@ -52,12 +61,16 @@ class TaskType extends AbstractType
                     'Medium' => 3,
                     'Difficult' => 4,
                 ],
+                'attr' => ['class' => 'form-control'],
             ])
             ->add('isGroupTask', CheckboxType::class, [
                 'label' => 'Is a Group Task?',
-                'required' => false, // Allow it to be unchecked (false)
+                'required' => false,
+                'attr' => ['class' => 'form-check-input'],
             ])
-            ->add('save', SubmitType::class)
+            ->add('save', SubmitType::class, [
+                'attr' => ['class' => 'btn btn-primary'],
+            ])
         ;
     }
 

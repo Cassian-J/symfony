@@ -14,25 +14,21 @@ use Doctrine\ORM\EntityManagerInterface;
 
 final class InvitationController extends AbstractController
 {
+    private CookieController $cookieController;
+
+    public function __construct(CookieController $cookieController)
+    {
+        $this->cookieController = $cookieController;
+    }
+
     #[Route('/invitation/send', name: 'invitation.send')]
     public function send(Request $request, EntityManagerInterface $em): Response
     {
         $invitation = new Invitation();
         
-        $userUuid = $request->cookies->get('user_uuid');
-        if (!$userUuid) {
-            throw new \Exception('Utilisateur non authentifié');
-        }
-
-        $user = $em->getRepository(Users::class)->find($userUuid);
-        if (!$user) {
-            throw new \Exception('Utilisateur introuvable');
-        }
-
-        $groups = $em->getRepository(Groups::class)->findBy(['Creator' => $user]);
-        if (!$groups) {
-            throw new \Exception('Aucun groupe trouvé pour cet utilisateur');
-        }
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $em);
+        $groups = $this->cookieController->getGroupsByUser($user, $em);
         
         $invitation->setWhichGroup($groups[0]);
         $invitation->setSender($user);
@@ -43,7 +39,8 @@ final class InvitationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $recever = $invitation->getRecever();
             if (!$recever) {
-                throw new \Exception('Utilisateur destinataire introuvable');
+                $this->addFlash('error', "utilisateur inconnu");
+                return $this->redirectToRoute('invitation.send');
             }
 
             $em->persist($invitation);
@@ -60,15 +57,8 @@ final class InvitationController extends AbstractController
     #[Route('/invitation/get', name: 'invitation.get')]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $userUuid = $request->cookies->get('user_uuid');
-        if (!$userUuid) {
-            throw new \Exception('Utilisateur non authentifié');
-        }
-
-        $user = $em->getRepository(Users::class)->find($userUuid);
-        if (!$user) {
-            throw new \Exception('Utilisateur introuvable');
-        }
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $em);
 
         $invitations = $em->getRepository(Invitation::class)->findBy(['Recever' => $user]);
         if (empty($invitations)) {
@@ -87,7 +77,8 @@ final class InvitationController extends AbstractController
     {
         $invitation = $em->getRepository(Invitation::class)->find($id);
         if (!$invitation) {
-            throw $this->createNotFoundException('Invitation introuvable');
+            $this->addFlash('error', 'Invitation introuvable');
+            return $this->redirectToRoute('invitation.get');
         }
 
         $user = $invitation->getRecever();
@@ -104,7 +95,8 @@ final class InvitationController extends AbstractController
     {
         $invitation = $em->getRepository(Invitation::class)->find($id);
         if (!$invitation) {
-            throw $this->createNotFoundException('Invitation introuvable');
+            $this->addFlash('error', 'Invitation introuvable');
+            return $this->redirectToRoute('invitation.get');
         }
 
         $em->remove($invitation);

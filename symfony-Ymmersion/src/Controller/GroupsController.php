@@ -11,15 +11,23 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Groups;
 use Ramsey\Uuid\Uuid;
+use App\Controller\CookieController;
 
 final class GroupsController extends AbstractController
 {
-    
+    private CookieController $cookieController;
+
+    public function __construct(CookieController $cookieController)
+    {
+        $this->cookieController = $cookieController;
+    }
+
     #[Route('/groups', name: 'groups.show')]
     public function index(Request $request): Response
     {
         return $this->render('groups/group.html.twig');
     }
+
     #[Route('/groups/create', name: 'groups.create', methods:['GET','POST'])]
     public function create(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -27,14 +35,9 @@ final class GroupsController extends AbstractController
         $group->setGroupUuid(Uuid::uuid4()->toString());;
         $group->setPoint(50);
         $userUuid = $request->cookies->get('user_uuid');
-        if (!$userUuid) {
-            throw new \Exception('Utilisateur non authentifié');
-        }
 
-        $user = $entityManager->getRepository(Users::class)->find($userUuid);
-        if (!$user) {
-            throw new \Exception('Utilisateur introuvable');
-        }
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
 
         $group->setCreator($user);
         $form = $this->createForm(GroupType::class, $group);
@@ -56,22 +59,14 @@ final class GroupsController extends AbstractController
     #[Route('/groups/delete', name: 'groups.delete',methods:['DELETE'])]
     public function delete(Request $request, EntityManagerInterface $em)
     {   
-        $userUuid = $request->cookies->get('user_uuid');
-        if (!$userUuid) {
-            throw new \Exception('Utilisateur non authentifié');
-        }
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $em);
+        $groups = $this->cookieController->getGroupsByUser($user, $em);
 
-        $user = $em->getRepository(Users::class)->find($userUuid);
-        if (!$user) {
-            throw new \Exception('Utilisateur introuvable');
-        }
-        $groups = $em->getRepository(Groups::class)->findby(['Creator'=>$user]);
-        if (!$groups) {
-            throw new \Exception('Utilisateur introuvable');
-        }
         $users = $em->getRepository(Users::class)->findby(['GroupUuid'=>$groups[0]]);
         if (!$users) {
-            throw new \Exception('Utilisateur introuvable');
+            $this->addFlash('error', 'aucun utilisateur connecté à ce groupe trouvé');
+            return $this->redirectToRoute('app_home');
         }
         foreach($users as $usertmp){
             $usertmp->setGroupUuid(null);

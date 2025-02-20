@@ -17,9 +17,12 @@ use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Cookie;
 
 class RegistrationController extends AbstractController
-{
-    public function __construct(private EmailVerifier $emailVerifier)
+{   
+    private CookieController $cookieController;
+
+    public function __construct(CookieController $cookieController)
     {
+        $this->cookieController = $cookieController;
     }
 
     #[Route('/register', name: 'app_register')]
@@ -37,11 +40,9 @@ class RegistrationController extends AbstractController
             /** @var string $plainPassword */
             $plainPassword = $form->get('plainPassword')->getData();
             
-            // Set email and pseudo from the form
             $user->setEmail($form->get('email')->getData());
             $user->setPseudo($form->get('pseudo')->getData());
             
-            // Check if email or pseudo already exists
             $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['Email' => $user->getEmail()]);
             if ($existingUser) {
                 $this->addFlash('error', 'Cet email est déjà utilisé par un autre utilisateur.');
@@ -54,22 +55,14 @@ class RegistrationController extends AbstractController
                 return $this->redirectToRoute('app_register');
             }
 
-            // encode the plain password
             $user->setPwd($userPasswordHasher->hashPassword($user, $plainPassword));
 
-            // Set UUID manually
             $user->setUserUuid(Uuid::uuid4()->toString());
-            // Set last connection
             $user->setLastConnection(new \DateTime());
 
             $entityManager->persist($user);
             $entityManager->flush();
-            $cookie = Cookie::create('user_uuid')
-                ->withValue($user->getUserUuid())
-                ->withExpires(strtotime('+30 days')) // Expire après 30 jours
-                ->withSecure(false) // Mettre à true en production (HTTPS)
-                ->withHttpOnly(true)
-                ->withPath('/');
+            $cookie = $this->cookieController->setCookie($user->getUserUuid());
             $response = $security->login($user, AppAuthenticator::class, 'main');
             $response->headers->setCookie($cookie);
             return $response;

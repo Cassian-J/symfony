@@ -11,8 +11,18 @@
 
     {% for task in tasks %}
     <ul>
+        <h3>{{task.title}}</h3>
+        <p>{{task.description}}</p>
+        <p>{{task.periodicity}}</p>
+        {% if habit.periodicity == 'weekly' %}
+            <p>Days:
+                {% set days = habit.days|split(',') %}
+                {% for day in days %}
+                    {{ day }}
+                {% endfor %}
+            </p>
+        {% endif %}
         <p>
-            {{task.title}} 
             <a class="btn btn-primary btn-sm" href="{{ path('task.edit', {id: task.id}) }}"> Edit Task </a> 
             <form action="{{ path('task.validate', {id: task.id}) }}" method="post">
                 <input type="hidden">

@@ -15,7 +15,7 @@ final class CookieController extends AbstractController
     {
         $userUuid = $request->cookies->get('user_uuid');
         if (!$userUuid) {
-            $this->addFlash('error', 'Utilisateur non authentifié');
+            $this->addFlash('danger', 'Utilisateur non authentifié');
             return $this->redirectToRoute('app_register');
         }
         return $userUuid;
@@ -24,7 +24,7 @@ final class CookieController extends AbstractController
     {
         $user = $em->getRepository(Users::class)->find($userUuid);
         if (!$user) {
-            $this->addFlash('error', 'Utilisateur introuvable');
+            $this->addFlash('danger', 'Utilisateur introuvable');
             return $this->redirectToRoute('app_register');
         }
         return $user;
@@ -33,7 +33,7 @@ final class CookieController extends AbstractController
     {
         $groups = $em->getRepository(Groups::class)->findby(['Creator'=>$user]);
         if (!$groups) {
-            $this->addFlash('error', 'groupe introuvable');
+            $this->addFlash('danger', 'groupe introuvable');
             return $this->redirectToRoute('groups.create');
         }
         return $groups[0];

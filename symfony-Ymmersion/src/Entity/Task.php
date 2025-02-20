@@ -14,7 +14,6 @@ class Task
     #[ORM\Column(type: Types::INTEGER,nullable:false)]
     private ?int $id = null;
 
-
     #[ORM\Column(type: Types::STRING,length: 250,nullable:false)]
     private ?string $Title = null;
 
@@ -24,8 +23,20 @@ class Task
     #[ORM\Column(type: Types::STRING,length: 6,nullable:false)]
     private ?string $color = null;
 
-    #[ORM\Column(type: Types::STRING,length: 255,nullable:false)]
+    #[ORM\Column]
+    private ?int $difficulty = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(length: 255)]
     private ?string $Periodicity = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $Days = null;
+
+    #[ORM\Column]
+    private ?bool $IsGroupTask = null;
 
     #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'tasks')]
     #[ORM\JoinColumn(name: 'UserUuid', referencedColumnName: 'user_uuid', nullable: true)]
@@ -34,12 +45,6 @@ class Task
     #[ORM\ManyToOne(targetEntity: Groups::class)]
     #[ORM\JoinColumn(nullable:true,name: 'GroupUuid', referencedColumnName: 'group_uuid')]
     private ?Groups $GroupUuid = null;
-
-    #[ORM\Column]
-    private ?int $difficulty = null;
-
-    #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
 
     public function getId(): ?int
     {
@@ -78,18 +83,6 @@ class Task
     public function setColor(string $color): static
     {
         $this->color = $color;
-
-        return $this;
-    }
-
-    public function getPeriodicity(): ?string
-    {
-        return $this->Periodicity;
-    }
-
-    public function setPeriodicity(string $Periodicity): static
-    {
-        $this->Periodicity = $Periodicity;
 
         return $this;
     }
@@ -138,6 +131,42 @@ class Task
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getPeriodicity(): ?string
+    {
+        return $this->Periodicity;
+    }
+
+    public function setPeriodicity(string $Periodicity): static
+    {
+        $this->Periodicity = $Periodicity;
+
+        return $this;
+    }
+
+    public function getDays(): ?string
+    {
+        return $this->Days;
+    }
+
+    public function setDays(?string $Days): static
+    {
+        $this->Days = $Days;
+
+        return $this;
+    }
+
+    public function isGroupTask(): ?bool
+    {
+        return $this->IsGroupTask;
+    }
+
+    public function setIsGroupTask(bool $IsGroupTask): static
+    {
+        $this->IsGroupTask = $IsGroupTask;
 
         return $this;
     }

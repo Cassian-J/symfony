@@ -21,12 +21,16 @@ final class HomeController extends AbstractController
     }
 
     #[Route('/', name: 'app_home')]
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
+
         $tasks = $entityManager->getRepository(Task::class)->findAll();
 
         return $this->render('home/index.html.twig', [
-            'name' => 'User',
+            'name' => $user->getPseudo(),
             'tasks' => $tasks,
         ]);
     }
@@ -34,6 +38,18 @@ final class HomeController extends AbstractController
     #[Route('/{id}/edit-task', name: 'task.edit', methods: ['GET', 'POST'])]
     public function editTask(Request $request,Task $task, EntityManagerInterface $entityManager)
     {
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
+
+        if ($task->getUserUuid()!=$user){
+            $this->addFlash(
+               'danger',
+               'This is not your task'
+            );
+            return $this->redirectToRoute('app_home');
+        }
+
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
         
@@ -57,19 +73,25 @@ final class HomeController extends AbstractController
     {
         $userUuid = $this->cookieController->getCookie($request);
         $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
-        $group = $this->cookieController->getGroupsByUser($user, $em);
+        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
 
         $task = new Task();
 
-        #TODO SET USER UUID AND GROUP UUID AUTOMATICALY WHEN CREATING TASKS
-        $task->setUserUuid($user);
-        $task->setGroupUuid($group);
+        
 
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()){
+            $task->setUserUuid($user);
+            $task->setGroupUuid($group);
             $task->setCreatedAt(new \DateTimeImmutable());
+
+            $days = $form->get('Days')->getData();
+            if ($days) {
+                $task->setDays(implode(',', $days));
+            }
+
             $entityManager->persist($task);
             $entityManager->flush();
             $this->addFlash(
@@ -87,6 +109,18 @@ final class HomeController extends AbstractController
     #[Route('/{id}/delete-task', name: 'task.delete', methods: ['DELETE'])]
     public function deleteTask(Request $request,Task $task, EntityManagerInterface $entityManager)
     {
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
+        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
+
+        if ($task->getUserUuid()!=$user){
+            $this->addFlash(
+               'danger',
+               'This is not your task'
+            );
+            return $this->redirectToRoute('app_home');
+        }
+
         $entityManager->remove($task);
         $entityManager->flush();
         $this->addFlash(
@@ -102,7 +136,7 @@ final class HomeController extends AbstractController
 
         $userUuid = $this->cookieController->getCookie($request);
         $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
-        $group = $this->cookieController->getGroupsByUser($user, $em);
+        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
 
         $grouplog = new GroupLogs();
         switch($task->getDifficulty()){
@@ -138,7 +172,7 @@ final class HomeController extends AbstractController
 
         $userUuid = $this->cookieController->getCookie($request);
         $user = $this->cookieController->getUserByCookie($userUuid, $entityManager);
-        $group = $this->cookieController->getGroupsByUser($user, $em);
+        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
 
         $grouplog = new GroupLogs();
         switch($task->getDifficulty()){

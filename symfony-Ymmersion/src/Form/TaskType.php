@@ -9,6 +9,8 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ColorType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -19,9 +21,42 @@ class TaskType extends AbstractType
         $builder
             ->add('Title')
             ->add('Description')
-            ->add('color', ColorType::class)
-            ->add('Periodicity')
-            ->add('difficulty')
+            ->add('Color', ColorType::class)
+            ->add('Periodicity', ChoiceType::class, [
+                'choices' => [
+                    'Daily' => 'daily',
+                    'Weekly' => 'weekly',
+                ],
+                'expanded' => true,
+                'multiple' => false,
+            ])
+            ->add('Days', ChoiceType::class, [
+                'choices' => [
+                    'Monday' => 1,
+                    'Tuesday' => 2,
+                    'Wednesday' => 3,
+                    'Thursday' => 4,
+                    'Friday' => 5,
+                    'Saturday' => 6,
+                    'Sunday' => 7,
+                ],
+                'expanded' => true,
+                'multiple' => true,
+                'required' => false,
+                'attr' => ['class' => 'weekly-days-selector'], // Add a class for easy JS selection
+            ])
+            ->add('Difficulty', ChoiceType::class, [
+                'choices' => [
+                    'Very Easy' => 1,
+                    'Easy' => 2,
+                    'Medium' => 3,
+                    'Difficult' => 4,
+                ],
+            ])
+            ->add('isGroupTask', CheckboxType::class, [
+                'label' => 'Is a Group Task?',
+                'required' => false, // Allow it to be unchecked (false)
+            ])
             ->add('save', SubmitType::class)
         ;
     }

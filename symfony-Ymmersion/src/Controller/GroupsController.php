@@ -23,9 +23,20 @@ final class GroupsController extends AbstractController
     }
 
     #[Route('/groups', name: 'groups.show')]
-    public function index(Request $request): Response
+    public function index(Request $request,EntityManagerInterface $em): Response
     {
-        return $this->render('groups/group.html.twig');
+        $userUuid = $this->cookieController->getCookie($request);
+        $user = $this->cookieController->getUserByCookie($userUuid, $em);
+        $group = $this->cookieController->getGroupsByUser($user, $em);
+
+        $users = $em->getRepository(Users::class)->findby(['GroupUuid'=>$group]);
+        if (!$users) {
+            $this->addFlash('error', 'aucun utilisateur connecté à ce groupe trouvé');
+            return $this->redirectToRoute('app_home');
+        }
+        return $this->render('groups/group.html.twig',[
+            'users'=>$users
+        ]);
     }
 
     #[Route('/groups/create', name: 'groups.create', methods:['GET','POST'])]

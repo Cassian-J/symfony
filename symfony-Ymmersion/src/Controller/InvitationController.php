@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Invitation;
 use App\Entity\Users;
-use App\Entity\Groups;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class InvitationController extends AbstractController
@@ -24,28 +23,30 @@ final class InvitationController extends AbstractController
     #[Route('/invitation/send', name: 'invitation.send')]
     public function send(Request $request, EntityManagerInterface $em): Response
     {
-        $invitation = new Invitation();
-        
         $userUuid = $this->cookieController->getCookie($request);
         $user = $this->cookieController->getUserByCookie($userUuid, $em);
         $group = $this->cookieController->getGroupsByUser($user, $em);
-        
-        $invitation->setWhichGroup($group);
-        $invitation->setSender($user);
-
+        $invitation = new Invitation();
         $form = $this->createForm(InvitationType::class, $invitation);
         $form->handleRequest($request);
-
+        
         if ($form->isSubmitted() && $form->isValid()) {
-            $recever = $invitation->getRecever();
+            $pseudo = $form->get('search')->getData();
+            $recever = $em->getRepository(Users::class)->findOneBy(['Pseudo' => $pseudo]);
+
             if (!$recever) {
-                $this->addFlash('error', "utilisateur inconnu");
-                return $this->redirectToRoute('invitation.send');
+                $this->addFlash('error', "Utilisateur '$pseudo' introuvable.");
+                return $this->redirectToRoute('invitation_send');
             }
+
+            $invitation->setRecever($recever);
+            $invitation->setSender($user);
+            $invitation->setWhichGroup($group);
 
             $em->persist($invitation);
             $em->flush();
 
+            $this->addFlash('success', "Invitation envoyée à $pseudo !");
             return $this->redirectToRoute('app_home');
         }
 

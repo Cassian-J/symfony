@@ -45,14 +45,12 @@ class RegistrationController extends AbstractController
             
             $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['Email' => $user->getEmail()]);
             if ($existingUser) {
-                $this->addFlash('error', 'Cet email est déjà utilisé par un autre utilisateur.');
-                return $this->redirectToRoute('app_register');
+                return $this->cookieController->message('danger','Cet email est déjà utilisé par un autre utilisateur.','app_register');
             }
 
             $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['Pseudo' => $user->getPseudo()]);
             if ($existingUser) {
-                $this->addFlash('error', 'Ce pseudo est déjà utilisé par un autre utilisateur.');
-                return $this->redirectToRoute('app_register');
+                return $this->cookieController->message('danger','Ce pseudo est déjà utilisé par un autre utilisateur.','app_register');
             }
 
             $user->setPwd($userPasswordHasher->hashPassword($user, $plainPassword));

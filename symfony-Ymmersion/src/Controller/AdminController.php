@@ -16,6 +16,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class AdminController extends AbstractController
 {
+    private CookieController $cookieController;
+
+    public function __construct(CookieController $cookieController)
+    {
+        $this->cookieController = $cookieController;
+    }
     #[Route('/admin', name: 'app_admin')]
     public function index(Request $request, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
     {
@@ -54,8 +60,7 @@ final class AdminController extends AbstractController
                 $violations = $validator->validate($profilePicture, $constraints);
 
                 if (count($violations) > 0) {
-                    $this->addFlash('error', $violations[0]->getMessage());
-                    return $this->redirectToRoute('app_admin');
+                    return $this->cookieController->message('danger',$violations[0]->getMessage(),'app_admin');
                 }
 
                 // Convertir le fichier en données binaires pour stockage BLOB
@@ -64,9 +69,8 @@ final class AdminController extends AbstractController
                 $user->setProfilePicture($imageData);
                 $entityManager->persist($user);
                 $entityManager->flush();
-                
-                $this->addFlash('success', 'Photo de profil mise à jour avec succès');
-                return $this->redirectToRoute('app_admin');
+    
+                return $this->cookieController->message('success','Photo de profil mise à jour avec succès','app_admin');
             }
         }
 
@@ -75,16 +79,14 @@ final class AdminController extends AbstractController
             $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['Pseudo' => $newPseudo]);
 
             if ($existingUser && $existingUser->getUserUuid() !== $user->getUserUuid()) {
-                $this->addFlash('error', 'Ce pseudo est déjà utilisé par un autre utilisateur.');
-                return $this->redirectToRoute('app_admin');
+                return $this->cookieController->message('danger','Ce pseudo est déjà utilisé par un autre utilisateur.','app_admin');
             }
 
             $user->setPseudo($newPseudo);
             $entityManager->persist($user);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Votre pseudo a été mis à jour avec succès.');
-            return $this->redirectToRoute('app_admin');
+            return $this->cookieController->message('success','Votre pseudo a été mis à jour avec succès.','app_admin');
         }
 
         if ($emailForm->isSubmitted() && $emailForm->isValid()) {
@@ -92,16 +94,14 @@ final class AdminController extends AbstractController
             $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['Email' => $newEmail]);
 
             if ($existingUser && $existingUser->getUserUuid() !== $user->getUserUuid()) {
-                $this->addFlash('error', 'Cet email est déjà utilisé par un autre utilisateur.');
-                return $this->redirectToRoute('app_admin');
+                return $this->cookieController->message('danger','Cet email est déjà utilisé par un autre utilisateur.','app_admin');
             }
 
             $user->setEmail($newEmail);
             $entityManager->persist($user);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Votre email a été mis à jour avec succès.');
-            return $this->redirectToRoute('app_admin');
+            return $this->cookieController->message('success','Votre email a été mis à jour avec succès.','app_admin');
         }
 
         return $this->render('admin/index.html.twig', [

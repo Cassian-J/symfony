@@ -101,6 +101,7 @@ final class HomeController extends AbstractController
             $task->setUserUuid($user);
             $task->setGroupUuid($group);
             $task->setCreatedAt(new \DateTimeImmutable());
+            $task-setDone(false);
 
             $entityManager->persist($task);
             $entityManager->flush();
@@ -175,11 +176,13 @@ final class HomeController extends AbstractController
         $grouplog->setUserUuid($user);
         $grouplog->setGroupUuid($group);
         $grouplog->setDate(new \DateTime());
-
         $entityManager->persist($grouplog);
 
-        $group->setPoint($grouplog->getPoint());
+        $group->setPoint($group->getPoint()+$grouplog->getPoint());
         $entityManager->persist($group);
+
+        $task->setDone(true);
+        $entityManager->persist($task);
 
         $entityManager->flush();
 
@@ -228,8 +231,11 @@ final class HomeController extends AbstractController
 
         $entityManager->persist($grouplog);
 
-        $group->setPoint($grouplog->getPoint());
+        $group->setPoint($group->getPoint()+$grouplog->getPoint());
         $entityManager->persist($group);
+
+        $task->setDone(true);
+        $entityManager->persist($task);
 
         $entityManager->flush();
 

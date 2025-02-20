@@ -8,16 +8,16 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class TaskController extends AbstractController
 {
-    public function isTaskDue(Habit $habit, \DateTime $date): bool
+    public function isTaskDue(Task $task, \DateTime $date): bool
     {
         $today = (int) $date->format('N'); 
 
-        if ($habit->getPeriodicity() === 'daily') {
+        if ($task->getPeriodicity() === 'daily') {
             return true; // Daily habits are always due
         }
 
         // Weekly habit
-        $days = explode(',', $habit->getDays());
+        $days = explode(',', $task->getDays());
         return in_array($today, $days);
     }
 }

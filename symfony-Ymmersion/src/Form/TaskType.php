@@ -34,6 +34,7 @@ class TaskType extends AbstractType
             ])
             ->add('Periodicity', ChoiceType::class, [
                 'choices' => [
+                    'Once' => 'once',
                     'Daily' => 'daily',
                     'Weekly' => 'weekly',
                 ],

@@ -5,21 +5,25 @@
 {% block body %}
 <div class="container mt-4">
 
-    <div class="text-center my-3">
+    {% if group is null %}
+        <a class="btn btn-primary btn-lg" href="{{ path('groups.create') }}">Créer un Groupe</a>
+    {% else %}
         <a class="btn btn-primary btn-lg" href="{{ path('task.create') }}">Créer une Tâche</a>
-    </div>
+    {% endif %}
 
     {% if total is not null %}
-        <p> Gained : {{ total.totalGained }}</p>
-        <p> Lost : {{ total.totalLost }}</p>
-        <p> Total : {{ total.totalAll }}</p>
+        <p> Gagné : <span class="text-success">{{ total.totalGained }}</span></p>
+        <p> Perdu : <span class="text-danger">{{ total.totalLost }}</span></p>
+        <p> Total : <strong>{{ total.totalAll }}</strong></p>
     {% endif %}
+
     {% for task in tasks %}
-    <div class="card mb-3 shadow-sm">
+    <div class="card mb-3 shadow-sm" style="border-left: 5px solid {{ task.color }};">
         <div class="card-body">
             <h3 class="card-title">{{ task.title }}</h3>
             <p class="card-text">{{ task.description }}</p>
             <p class="text-muted">Périodicité: {{ task.periodicity }}</p>
+
             {% if task.periodicity == 'weekly' %}
                 <p><strong>Jours:</strong>
                     {% set days = task.days|split(',') %}
@@ -28,6 +32,7 @@
                     {% endfor %}
                 </p>
             {% endif %}
+
             <div class="d-flex justify-content-between mt-3">
                 <a class="btn btn-warning btn-sm" href="{{ path('task.edit', {id: task.id}) }}">Modifier</a>
                 <div>
@@ -44,3 +49,4 @@
     {% endfor %}
 </div>
 {% endblock %}
+

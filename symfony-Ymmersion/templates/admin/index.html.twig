@@ -1,102 +1,59 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Mon Profil{% endblock %}
-{% block navbar%}{% include 'navbar/navbar.html.twig' %}{% endblock %}
+
 {% block body %}
-<div class="container mt-5">
+<div class="container mt-4">
+    {# Inclure les messages flash ici #}
     {% include 'partials/flash.html.twig' %}
 
-    <div class="card shadow-sm p-4">
-        <h1 class="mb-4 text-center">Mon Profil</h1>
+    <h1 class="mb-4">Mon Profil</h1>
 
-        {% if app.user %}
-            <div class="text-center mb-3">
+    {% if app.user %}
+        <div class="profile-info mb-4">
+            <h2>Informations</h2>
+            <div class="mb-3">
                 {% if app.user.profilePicture is not null %}
                     <img src="{{ path('app_get_profile_picture') }}" 
                          alt="Photo de profil" 
-                         class="profile-img">
+                         class="img-fluid rounded-circle" 
+                         style="width: 200px; height: 200px;">
                 {% else %}
-                    <div class="profile-placeholder">
-                        <i class="fas fa-user fa-3x text-muted"></i>
-                    </div>
+                    <img src="{{ asset('images/default-profile.jpg') }}" 
+                         alt="Photo de profil par défaut" 
+                         class="img-fluid rounded-circle" 
+                         style="width: 200px; height: 200px;">
                 {% endif %}
-                <h3 class="mt-3">{{ app.user.pseudo }}</h3>
-                <p class="text-muted">{{ app.user.email }}</p>
             </div>
+            <p><strong>Pseudo:</strong> {{ app.user.pseudo }}</p>
+            <p><strong>Email:</strong> {{ app.user.email }}</p>
+        </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card p-3 mb-3 shadow-sm">
-                        <h4>Modifier ma photo de profil</h4>
-                        {{ form_start(form) }}
-                            {{ form_row(form.profilePicture, {'attr': {'class': 'form-control'}}) }}
-                            <button type="submit" class="btn btn-primary mt-2 w-100">Mettre à jour</button>
-                        {{ form_end(form) }}
-                    </div>
-                </div>
+        <div class="profile-form mb-4">
+            <h2>Modifier ma photo de profil</h2>
+            {{ form_start(form) }}
+                {{ form_row(form.profilePicture, {'attr': {'class': 'form-control'}}) }}
+                <button type="submit" class="btn btn-primary mt-2">Mettre à jour</button>
+            {{ form_end(form) }}
+        </div>
 
-                <div class="col-md-6">
-                    <div class="card p-3 mb-3 shadow-sm">
-                        <h4>Modifier mon pseudo</h4>
-                        {{ form_start(pseudoForm) }}
-                            {{ form_row(pseudoForm.pseudo, {'attr': {'class': 'form-control'}}) }}
-                            <button type="submit" class="btn btn-primary mt-2 w-100">Mettre à jour</button>
-                        {{ form_end(pseudoForm) }}
-                    </div>
-                </div>
+        <div class="profile-form mb-4">
+            <h2>Modifier mon pseudo</h2>
+            {{ form_start(pseudoForm) }}
+                {{ form_row(pseudoForm.pseudo, {'attr': {'class': 'form-control'}}) }}
+                <button type="submit" class="btn btn-primary mt-2">Mettre à jour</button>
+            {{ form_end(pseudoForm) }}
+        </div>
 
-                <div class="col-md-12">
-                    <div class="card p-3 mb-3 shadow-sm">
-                        <h4>Modifier mon email</h4>
-                        {{ form_start(emailForm) }}
-                            {{ form_row(emailForm.email, {'attr': {'class': 'form-control'}}) }}
-                            <button type="submit" class="btn btn-primary mt-2 w-100">Mettre à jour</button>
-                        {{ form_end(emailForm) }}
-                    </div>
-                </div>
-            </div>
+        <div class="profile-form mb-4">
+            <h2>Modifier mon email</h2>
+            {{ form_start(emailForm) }}
+                {{ form_row(emailForm.email, {'attr': {'class': 'form-control'}}) }}
+                <button type="submit" class="btn btn-primary mt-2">Mettre à jour</button>
+            {{ form_end(emailForm) }}
+        </div>
 
-            <div class="text-center mt-4">
-                <a href="{{ path('app_logout')}}" class="btn btn-danger">Déconnexion</a>
-            </div>
-        {% endif %}
-    </div>
+        <a href="{{ path('app_logout')}}" class="btn btn-danger">Déconnexion</a>
+    {% endif %}
 </div>
 {% endblock %}
-
-{% block stylesheets %}
-<style>
-    .profile-img {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid #007bff;
-    }
-    
-    .profile-placeholder {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        background: #f8f9fa;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 3px solid #ddd;
-    }
-
-    .card {
-        border-radius: 10px;
-        background: #fff;
-    }
-
-    .shadow-sm {
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn {
-        border-radius: 5px;
-    }
-</style>
-{% endblock %}
-

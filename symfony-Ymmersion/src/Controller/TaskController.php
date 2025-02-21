@@ -64,7 +64,7 @@ final class TaskController extends AbstractController
 
         // For tasks due on the last day of connection, check for tasks that have been done that day and ignore them
         foreach ($tasks as $task) {
-            if($this->isTaskDue($task, $currentDate) && $task->isGroupTask()) {
+            if($this->isTaskDue($task, $currentDate) && $task->isGroupTask() && !$task->isDone()) {
                 $this->invalidateGroupTask($group, clone $currentDate, $task, $entityManager);
             }
             else if ($this->isTaskDue($task, $currentDate) && !$task->isDone()) {

@@ -46,6 +46,7 @@ final class GroupsController extends AbstractController
         return $this->render('groups/group.html.twig',[
             'users'=>$users,
             'user'=> $user,
+            'group'=>$group,
             'useruuid'=>$user->getUserUuid(),
             'groupuuid'=> $group->getCreator()->getUserUuid()
         ]);

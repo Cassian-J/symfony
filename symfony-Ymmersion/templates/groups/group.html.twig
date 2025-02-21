@@ -5,7 +5,7 @@
 {% block body %}
 <div class="container mt-4">
     <h2 class="mb-3 text-center">Les Membres</h2>
-
+    {{group.point}}
     {% if users is not empty %}
         <ul class="list-group">
             {% for user in users %}

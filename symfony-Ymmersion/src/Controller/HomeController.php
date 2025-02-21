@@ -157,6 +157,14 @@ final class HomeController extends AbstractController
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
+        $taskCreated = $entityManager->getRepository(Task::class)->findBy(['UserUuid' => $user]);
+        if (!empty($taskCreated)) {
+            $taskGroupCreated = $entityManager->getRepository(Task::class)->findBy(['GroupUuid' => $group]);
+            if (!empty($taskGroupCreated) || $group->getCreator() === $user) {
+                return $this->cookieController->message('danger', 'You cannot create a Task because you have already created one.', 'app_home');
+            }
+        }
+
         $task = new Task();
         
         $form = $this->createForm(TaskType::class, $task);

@@ -10,9 +10,18 @@ use App\Entity\GroupLogs;
 use App\Entity\Users;
 use App\Entity\Groups;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\Constraints\Date;
 
 final class TaskController extends AbstractController
 {
+    private GroupsController $groupsController;
+
+    public function __construct(GroupsController $groupsController)
+    {
+        $this->groupsController = $groupsController;
+    }
+
     // Check if a task is due based on periodicity
     public function isTaskDue(Task $task, \DateTime $date): bool
     {

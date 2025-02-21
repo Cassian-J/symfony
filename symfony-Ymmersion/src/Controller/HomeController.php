@@ -24,7 +24,7 @@ final class HomeController extends AbstractController
     {
         $this->cookieController = $cookieController;
         $this->taskController = $taskController;
-        $this->newConnectionDate = new \DateTime(); //Set custom date
+        $this->newConnectionDate = new \DateTime();
         //$this->newConnectionDate = new \DateTime('2025-02-28 10:30:00'); //Set custom date
     }
 
@@ -39,7 +39,7 @@ final class HomeController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
+        $group = $group = $user->getGroupUuid();
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
@@ -258,7 +258,7 @@ final class HomeController extends AbstractController
 
         //make sure group task is created in user is group owner
         if($task->isGroupTask()){
-            
+            $this->taskController->validateGroupTask($user, $group, $this->newConnectionDate, $task, $entityManager);
         } else {
             $group->setPoint($group->getPoint()+$grouplog->getPoint());
             $entityManager->persist($group);

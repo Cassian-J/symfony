@@ -20,44 +20,39 @@ final class LogsController extends AbstractController
         $this->cookieController = $cookieController;
     }
     #[Route('/logs', name: 'logs.show')]
-    public function index(Request $request,EntityManagerInterface $em): Response
-    {
-        $userUuid = $this->cookieController->getCookie($request);
-        if(!is_string($userUuid )){
-            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
-        }
-        $user = $this->cookieController->getUserByCookie($userUuid, $em);
-        if(!$user instanceof Users){
-            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
-        }
-        $group = $user->getGroupUuid();
-        if(!$group instanceof Groups){
-            return $this->cookieController->message('danger','groupe inexistant','groups.create');
-        }
-        $logs = $em->getRepository(GroupLogs::class)->findby(['GroupUuid'=>$group]);
-        if (empty($logs)){
-            return $this->render('logs/logs.html.twig', [
-                'logs' => null,
-                'user'=> $user
-            ]);
-        } else {
-            $taskIds = [];
-            foreach($logs as $log){
-                $taskIds[] = $log->getTaskId();
-            }
-            $tasks = $em->getRepository(Task::class)->findBy(['id' => $taskIds]);
-
-            $taskNames = [];
-            foreach ($tasks as $task) {
-                $taskNames[$task->getId()] = $task->getTitle();  
-            }
-
-            return $this->render('logs/logs.html.twig', [
-                'logs' => $logs,
-                'taskNames' => $taskNames,
-                'user' => $user
-            ]);
-        }
-        
+public function index(Request $request, EntityManagerInterface $em): Response
+{
+    $globalLogs=[];
+    $userUuid = $this->cookieController->getCookie($request);
+    if (!is_string($userUuid)) {
+        return $this->cookieController->message('danger', 'utilisateur non authentifié', 'app_register');
     }
+
+    $user = $this->cookieController->getUserByCookie($userUuid, $em);
+    if (!$user instanceof Users) {
+        return $this->cookieController->message('danger', 'utilisateur inexistant', 'app_register');
+    }
+
+    $logs = $em->getRepository(GroupLogs::class)->findBy(['GroupUuid' => $user->getGroupUuid()]);
+
+    if (empty($logs)) {
+        return $this->render('logs/logs.html.twig', [
+            'logs' => null,
+            'user' => $user
+        ]);
+    }
+    foreach($logs as $log){
+        $globalLogs[] = [
+            'date' => $log->getDate(),
+            'point' => $log->getPoint(),
+            'taskTitle' => $log->getTaskId() ? $log->getTaskId()->getTitle() : 'Tâche inconnue',
+            'userPseudo' => $log->getUserUuid() ? $log->getUserUuid()->getPseudo() : 'Utilisateur inconnu',
+        ];
+    }
+
+    return $this->render('logs/logs.html.twig', [
+        'logs' => $globalLogs,
+        'user' => $user
+    ]);
+}
 }

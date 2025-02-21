@@ -42,6 +42,14 @@ final class HomeController extends AbstractController
         }
         $group = $user->getGroupUuid();
         
+        if ($group instanceof Groups) {
+            // Vérifier les points du groupe à chaque connexion
+            $response = $this->groupsController->checkGroupPoints($group, $entityManager, $request);
+            if ($response) {
+                return $response;
+            }
+        }
+        
         $total = null;
         $allTasks=null;
         //$newConnectionDate = new \DateTime(); //Today

@@ -143,4 +143,15 @@ final class GroupsController extends AbstractController
         $em->flush();
         return $this->cookieController->message('success',"vous êtes partis du groupe $groupName",'app_admin');
     }
+
+    public function checkGroupPoints(Groups $group, EntityManagerInterface $entityManager, Request $request)
+    {
+        if ($group->getPoint() <= 0) {
+            // Supprimer le groupe
+            return $this->delete($request, $entityManager);
+        }
+
+        // Si le groupe a encore des points, ne rien faire
+        return null;
+    }
 }

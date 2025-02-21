@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Logs{% endblock %}
+
+{% block navbar %}
+    {% include 'navbar/navbar.html.twig' %}
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-3 text-center">Historique des Logs</h2>
+
+    {% if logs is not empty %}
+        <ul class="list-group">
+            {% for log in logs %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ log.date|date('d-m-Y H:i') }}</strong> <br>
+                        <span class="text-muted">{{ log.userPseudo }}</span> - 
+                        <span class="fw-bold">{{ log.taskTitle }}</span>
+                    </div>
+                    <span class="badge {% if log.point > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                        {{ log.point }}
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-center text-muted">Aucun log trouvé.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+
+
+

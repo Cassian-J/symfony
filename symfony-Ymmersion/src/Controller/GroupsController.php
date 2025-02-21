@@ -47,7 +47,7 @@ final class GroupsController extends AbstractController
             'users'=>$users,
             'user'=> $user,
             'useruuid'=>$user->getUserUuid(),
-            'groupuuid'=> $group->getCreator()
+            'groupuuid'=> $group->getCreator()->getUserUuid()
         ]);
     }
 
@@ -132,7 +132,7 @@ final class GroupsController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $groupName = $user->getGroupUuid()->getGroupUuid();
+        $groupName = $user->getGroupUuid()->getName();
         $user->setGroupUuid(null);
         $tasks = $em->getRepository(Task::class)->findby(['UserUuid'=>$user]);
         

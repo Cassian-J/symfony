@@ -3,22 +3,47 @@
 {% block title %}Register{% endblock %}
 
 {% block body %}
-    {% for flash_error in app.flashes('verify_email_error') %}
-        <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
-    {% endfor %}
+    <div class="container mt-5">
+        {% for flash_error in app.flashes('verify_email_error') %}
+            <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+        {% endfor %}
 
-    <h1>Register</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Register</h4>
+                    </div>
+                    <div class="card-body">
+                        {{ form_errors(registrationForm) }}
 
-    {{ form_errors(registrationForm) }}
+                        {{ form_start(registrationForm) }}
+                            <div class="mb-3">
+                                {{ form_row(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_row(registrationForm.pseudo, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_row(registrationForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_row(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
+                                <label class="form-check-label" for="agreeTerms">
+                                    I agree to the terms and conditions
+                                </label>
+                            </div>
 
-    {{ form_start(registrationForm) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.pseudo) }}
-        {{ form_row(registrationForm.plainPassword) }}
-        {{ form_row(registrationForm.agreeTerms) }}
+                            <button type="submit" class="btn btn-primary w-100">Register</button>
+                        {{ form_end(registrationForm) }}
+                    </div>
+                </div>
 
-        <button type="submit" class="btn btn-primary">Register</button>
-    {{ form_end(registrationForm) }}
-
-    <p> do you already have an email ?<a href="{{ path('app_login')}}"> click here to login</a></p>
+                <div class="text-center mt-3">
+                    <p>Already have an account? <a href="{{ path('app_login') }}">Click here to login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
+

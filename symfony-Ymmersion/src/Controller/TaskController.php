@@ -49,8 +49,18 @@ final class TaskController extends AbstractController
 
     public function getAllTasksMissedSinceDate(\DateTime $startDate, \DateTime $endDate, Users $user, Groups $group, EntityManagerInterface $entityManager)
     {
-        $tasks = $entityManager->getRepository(Task::class)->findBy(['Periodicity' => ['$ne' => 'once'], 'GroupUuid'=>$group]); //Get all tasks with periodicity from all users from the group
+        //$tasks = $entityManager->getRepository(Task::class)->findBy(['Periodicity' => ['$ne' => 'once'], 'GroupUuid'=>$group]); //Get all tasks with periodicity from all users from the group
+        $queryBuilder = $entityManager->createQueryBuilder();
+        $queryBuilder
+            ->select('t')
+            ->from(Task::class, 't')
+            ->join('t.GroupUuid', 'g')
+            ->where('t.Periodicity != :periodicity')
+            ->andWhere('g = :group')
+            ->setParameter('periodicity', 'once')
+            ->setParameter('group', $group);
 
+        $tasks = $queryBuilder->getQuery()->getResult();
         $currentDate = clone $startDate;
 
         // For tasks due on the last day of connection, check for tasks that have been done that day and ignore them

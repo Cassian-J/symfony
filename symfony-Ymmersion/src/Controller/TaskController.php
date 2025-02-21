@@ -64,7 +64,7 @@ final class TaskController extends AbstractController
 
         // For tasks due on the last day of connection, check for tasks that have been done that day and ignore them
         foreach ($tasks as $task) {
-            if($this->isTaskDue($task, $currentDate) && $task->isIsGroupTask()) {
+            if($this->isTaskDue($task, $currentDate) && $task->isGroupTask()) {
                 $this->invalidateGroupTask($group, clone $currentDate, $task, $entityManager);
             }
             else if ($this->isTaskDue($task, $currentDate) && !$task->isDone()) {
@@ -146,15 +146,15 @@ final class TaskController extends AbstractController
         return $total;
     }
 
-    public function findAllGroupTasksCurrentlyDue(Users $user, \DateTime $date, EntityManagerInterface $entityManager):array
+    public function findAllGroupTasksCurrentlyDue(Groups $group, Users $user, \DateTime $date, EntityManagerInterface $entityManager):array
     {
         $dueTasks = [];
         $groupTasks = $entityManager->getRepository(Task::class)->findBy(['GroupUuid'=>$group, 'IsGroupTask'=>true]);
         foreach ($groupTasks as $groupTask) {
             if ($this->isTaskDue($groupTask, $date)) {
                 //check in grouplogs if this user has dont this grouptask at the date specified
-                $grouplog = $em->getRepository(GroupLogs::class)->findBy(['UserUuid'=>$user, 'date'=>$date, 'TaskId'=>$groupTask]);
-                if ($groups===[]){
+                $groupLog = $entityManager->getRepository(GroupLogs::class)->findBy(['UserUuid'=>$user, 'date'=>$date, 'TaskId'=>$groupTask]);
+                if ($groupLog===[]){
                     $dueTasks[] = $groupTask;
                 }
             }
@@ -181,7 +181,7 @@ final class TaskController extends AbstractController
     {
         $usersInGroup = $entityManager->getRepository(Users::class)->findBy(['GroupUuid'=>$group]);
         foreach ($usersInGroup as $user) {
-            $groupLog = $entityManager->getRepository(GroupLogs::class)->findBy(['UserUuid'=> $user, 'GroupUuid'=>$group, 'date'=>$date, 'TaskId'=>$groupTask]);
+            $groupLog = $entityManager->getRepository(GroupLogs::class)->findBy(['UserUuid'=> $user, 'GroupUuid'=>$group, 'date'=>$date, 'TaskId'=>$task]);
             if ($groupLog===[]){
                 $this->logTaskFailure($date, $task, $user, $group, $entityManager);
             }

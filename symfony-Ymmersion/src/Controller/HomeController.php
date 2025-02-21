@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use DateTime;
 use App\Entity\Task;
 use App\Entity\GroupLogs;
 use App\Entity\Users;
@@ -23,8 +24,8 @@ final class HomeController extends AbstractController
     {
         $this->cookieController = $cookieController;
         $this->taskController = $taskController;
-        //$this->newConnectionDate = new \DateTime(); //Set custom date
-        $this->newConnectionDate = new \DateTime('2025-02-28 10:30:00'); //Set custom date
+        $this->newConnectionDate = new \DateTime(); //Set custom date
+        //$this->newConnectionDate = new \DateTime('2025-02-28 10:30:00'); //Set custom date
     }
 
     #[Route('/', name: 'app_home')]
@@ -48,9 +49,9 @@ final class HomeController extends AbstractController
         // Check if this is the first connection of the day
         
         $lastConnection = $user->getLastConnection();
-        if ($newConnectionDate->format('Y-m-d') !== $lastConnection->format('Y-m-d')) {
+        if ($this->newConnectionDate->format('Y-m-d') !== $lastConnection->format('Y-m-d')) {
             
-            $today = $newConnectionDate;
+            $today = $this->newConnectionDate;
             $queryBuilder = $entityManager->createQueryBuilder();
             $queryBuilder
                 ->select('u')
@@ -71,24 +72,26 @@ final class HomeController extends AbstractController
                 if (!empty($oldestLastConnectedUser)) { //Error Case
                     $oldestUserConnection = $oldestLastConnectedUser[0]->getLastConnection();
                     // Calculate and update grouplog with all tasks not done between today and the last time a user of the group was connected
-                    $this->taskController->getAllTasksMissedSinceDate($oldestUserConnection, (clone $newConnectionDate)->modify('-1 day'), $user, $group, $entityManager);
+                    $this->taskController->getAllTasksMissedSinceDate($oldestUserConnection, (clone $this->newConnectionDate), $user, $group, $entityManager);
                 }
             }
 
             // Get all the points obtained and lost from all users since current user's last connection
             $total = $this->taskController->getAllPointsObtainedSinceLastConnection($lastConnection, $group, $entityManager);
 
-            $this->taskController->findAllTasksCurrentlyDue($user, $newConnectionDate, $entityManager); //Rested the done marker for today's tasks
-            $this->taskController->findAllGroupTasksCurrentlyDue($user, $newConnectionDate, $entityManager);
+            $this->taskController->findAllTasksCurrentlyDue($user, $this->newConnectionDate, $entityManager); //Rested the done marker for today's tasks
 
         } 
 
         $tasks = $entityManager->getRepository(Task::class)->findBy(['UserUuid'=>$user, 'Done'=>false]);
+        $groupTasks = $this->taskController->findAllGroupTasksCurrentlyDue($group, $user, $this->newConnectionDate, $entityManager);
+        
+        $allTasks = array_merge($tasks, $groupTasks);
         $this->cookieController->updateLastConnection($request,$entityManager);
         return $this->render('home/index.html.twig', [
             'name' => $user->getPseudo(),
             'total' => $total,
-            'tasks' => $tasks,
+            'tasks' => $allTasks,
         ]);
     }
 
@@ -107,15 +110,15 @@ final class HomeController extends AbstractController
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
-        if ($task->getUserUuid()!=$user){
-            return $this->cookieController->message('danger','This is not your task','app_home');
-        }
-        //make sure group task is created in user is group owner
+        
+        //make sure group task is created and user is group owner
         if($task->isGroupTask()){
-            $creator = $em->getRepository(Users::class)->find($group->getCreator());
+            $creator = $entityManager->getRepository(Users::class)->find($group->getCreator());
             if($user !== $creator) {
                 return $this->cookieController->message('danger','You cannot edit a Group Task because you are not the owner of the group.','app_home');
             }
+        } else {
+
         }
 
         $form = $this->createForm(TaskType::class, $task);
@@ -161,7 +164,7 @@ final class HomeController extends AbstractController
 
             //make sure group task is created in user is group owner
             if($task->isGroupTask()){
-                $creator = $em->getRepository(Users::class)->find($group->getCreator());
+                $creator = $entityManager->getRepository(Users::class)->find($group->getCreator());
                 if($user !== $creator) {
                     return $this->cookieController->message('danger','You cannot create a Group Task because you are not the owner of the group.','app_home');
                 }
@@ -194,14 +197,16 @@ final class HomeController extends AbstractController
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
-        if ($task->getUserUuid()!=$user){
-            return $this->cookieController->message('danger','This is not your task','app_home');
-        }
+        
         //make sure group task is created in user is group owner
         if($task->isGroupTask()){
-            $creator = $em->getRepository(Users::class)->find($group->getCreator());
+            $creator = $entityManager->getRepository(Users::class)->find($group->getCreator());
             if($user !== $creator) {
                 return $this->cookieController->message('danger','You cannot delete a Group Task because you are not the owner of the group.','app_home');
+            }
+        } else {
+            if ($task->getUserUuid()!=$user){
+                return $this->cookieController->message('danger','This is not your task','app_home');
             }
         }
 
@@ -245,7 +250,7 @@ final class HomeController extends AbstractController
         $grouplog->setTaskId($task);
         $grouplog->setUserUuid($user);
         $grouplog->setGroupUuid($group);
-        $grouplog->setDate($newConnectionDate);
+        $grouplog->setDate($this->newConnectionDate);
         $entityManager->persist($grouplog);
 
         //make sure group task is created in user is group owner
@@ -303,7 +308,7 @@ final class HomeController extends AbstractController
         $grouplog->setTaskId($task);
         $grouplog->setUserUuid($user);
         $grouplog->setGroupUuid($group);
-        $grouplog->setDate($newConnectionDate);
+        $grouplog->setDate($this->newConnectionDate);
 
         $entityManager->persist($grouplog);
 

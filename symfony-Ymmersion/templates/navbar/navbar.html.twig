@@ -1,0 +1,111 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="{{ path('app_home') }}">MonSite</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('groups.show') }}">Mon Groupes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('invitation.get') }}">Invitations</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav">
+                {% if user %}
+                    <li class="nav-item dropdown">
+                        {% if app.user.profilePicture is not null %}
+                            <a href="{{ path('app_admin') }}">
+                                <img src="{{ path('app_get_profile_picture') }}" alt="Profil" class="rounded-circle" width="40" height="40">
+                            </a>
+                        {% else %}
+                            <a href="{{ path('app_admin') }}">
+                                <div class="profile-placeholder" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                            </a>
+                        {% endif %}
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar {
+        font-family: 'Arial', sans-serif;
+    }
+
+    .navbar-light.bg-light {
+        background-color: #f8f9fa !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-brand {
+        font-weight: bold;
+        color: #007bff !important;
+    }
+
+    .navbar-nav .nav-item img {
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .navbar-nav .nav-item .bg-secondary {
+        background-color: #6c757d !important;
+    }
+
+    .navbar-nav .nav-item .fas {
+        font-size: 20px;
+    }
+
+    .navbar-nav .nav-item .btn {
+        font-weight: 500;
+    }
+
+    .navbar-nav .nav-item .btn-outline-primary {
+        color: #007bff;
+        border-color: #007bff;
+    }
+
+    .navbar-nav .nav-item .btn-outline-primary:hover {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .navbar-nav .nav-item .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .navbar-nav .nav-item .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+
+    .navbar-nav .nav-item {
+        margin-left: 15px;
+    }
+
+    .navbar-nav .dropdown-menu {
+        border-radius: 5px;
+    }
+
+    .navbar-nav .nav-link:hover {
+        background-color: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .profile-placeholder {
+        border-radius: 50%;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid #ddd;
+    }
+</style>

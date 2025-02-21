@@ -29,14 +29,7 @@ final class CookieController extends AbstractController
         $user = $em->getRepository(Users::class)->find($userUuid);
         return $user;
     }
-    public function getGroupsByUser(Users $user,EntityManagerInterface $em)
-    {
-        $groups = $em->getRepository(Groups::class)->findby(['Creator'=>$user]);
-        if ($groups===[]){
-            return null;
-        }
-        return $groups[0];
-    }
+    
     public function setCookie(string $user)
     {
         $cookie = Cookie::create('user_uuid')

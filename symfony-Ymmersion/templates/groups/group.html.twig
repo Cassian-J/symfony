@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Groupes{% endblock %}
-
+{% block navbar%}{% include 'navbar/navbar.html.twig' %}{% endblock %}
 {% block body %}
 <div class="container mt-4">
     <h2 class="mb-3 text-center">Les Membres</h2>
@@ -24,7 +24,7 @@
 </div>
 
 <div class="container text-center mt-4">
-    {% if user is same as(group) %}
+    {% if useruuid is same as(groupuuid) %}
         <form action="{{ path('groups.delete') }}" method="post" class="d-inline-block">
             <input type="hidden" name="_method" value="DELETE">
             <button type="submit" class="btn btn-danger">Supprimer</button>

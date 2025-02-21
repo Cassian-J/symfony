@@ -45,8 +45,9 @@ final class GroupsController extends AbstractController
         $this->cookieController->updateLastConnection($request,$em);
         return $this->render('groups/group.html.twig',[
             'users'=>$users,
-            'user'=>$user->getUserUuid(),
-            'group'=> $group->getCreator()
+            'user'=> $user,
+            'useruuid'=>$user->getUserUuid(),
+            'groupuuid'=> $group->getCreator()
         ]);
     }
 
@@ -84,6 +85,7 @@ final class GroupsController extends AbstractController
 
         return $this->render('groups/create.html.twig', [
             'group' => $form->createView(),
+            'user'=> $user
         ]);
     }
 
@@ -98,7 +100,7 @@ final class GroupsController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $em);
+        $group = $user->getGroupUuid();
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
@@ -107,8 +109,12 @@ final class GroupsController extends AbstractController
         if (!$users) {
             return $this->cookieController->message('danger','aucun utilisateur connecté à ce groupe trouvé','app_home');
         }
+        $tasks = $em->getRepository(Task::class)->findby(['UserUuid'=>$user]);
         foreach($users as $usertmp){
             $usertmp->setGroupUuid(null);
+        }
+        foreach($tasks as $task){
+            $em->remove($task);
         }
         $em->remove($group);
         $em->flush();

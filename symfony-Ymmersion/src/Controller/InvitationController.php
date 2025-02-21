@@ -32,7 +32,7 @@ final class InvitationController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $em);
+        $group = $user->getGroupUuid();
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
@@ -60,6 +60,7 @@ final class InvitationController extends AbstractController
 
         return $this->render('invitation/send.html.twig', [
             'form' => $form->createView(),
+            'user'=> $user
         ]);
     }
 
@@ -78,13 +79,15 @@ final class InvitationController extends AbstractController
         $invitations = $em->getRepository(Invitation::class)->findBy(['Recever' => $user]);
         if (empty($invitations)) {
             return $this->render('invitation/get.html.twig', [
-                'invitation' => null
+                'invitation' => null,
+                'user'=> $user
             ]);
         }
         
 
         return $this->render('invitation/get.html.twig',[
-            'invitation' => $invitations
+            'invitation' => $invitations,
+            'user'=> $user
         ]);
     }
     #[Route('/invitation/accept/{id}', name: 'invitation.accept', methods: ['POST'])]

@@ -108,6 +108,7 @@ final class AdminController extends AbstractController
             'form' => $form->createView(),
             'pseudoForm' => $pseudoForm->createView(),
             'emailForm' => $emailForm->createView(),
+            'user'=> $user
         ]);
     }
 

@@ -40,6 +40,7 @@ final class HomeController extends AbstractController
         return $this->render('home/index.html.twig', [
             'name' => $user->getPseudo(),
             'tasks' => $tasks,
+            'user'=> $user
         ]);
     }
 
@@ -54,7 +55,7 @@ final class HomeController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
+        $group = $user->getGroupUuid();
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
@@ -72,7 +73,8 @@ final class HomeController extends AbstractController
         
         return $this->render('home/editTask.html.twig', [
             'task' => $task,
-            'form' => $form
+            'form' => $form,
+            'user'=> $user
         ]);
     }
 
@@ -87,7 +89,7 @@ final class HomeController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
+        $group = $user->getGroupUuid();
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
@@ -107,7 +109,8 @@ final class HomeController extends AbstractController
         }
 
         return $this->render('home/createTask.html.twig', [
-            'form' => $form
+            'form' => $form,
+            'user'=> $user
         ]);
     }
 
@@ -122,7 +125,7 @@ final class HomeController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
+        $group =$user->getGroupUuid();
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
@@ -146,7 +149,7 @@ final class HomeController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
+        $group = $user->getGroupUuid();
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
@@ -189,7 +192,7 @@ final class HomeController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
+        $group =$user->getGroupUuid();
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }

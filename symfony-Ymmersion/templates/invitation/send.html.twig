@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Hello InvitationController!{% endblock %}
-
+{% block navbar%}{% include 'navbar/navbar.html.twig' %}{% endblock %}
 {% block body %}
     {{ form_start(form) }}
     {{ form_widget(form) }}

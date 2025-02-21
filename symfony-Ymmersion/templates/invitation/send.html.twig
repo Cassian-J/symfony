@@ -1,9 +1,32 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello InvitationController!{% endblock %}
-{% block navbar%}{% include 'navbar/navbar.html.twig' %}{% endblock %}
+{% block title %}Envoyer une Invitation{% endblock %}
+
+{% block navbar %}
+    {% include 'navbar/navbar.html.twig' %}
+{% endblock %}
+
 {% block body %}
-    {{ form_start(form) }}
-    {{ form_widget(form) }}
-    {{ form_end(form) }}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Envoyer une Invitation</h2>
+
+    <div class="card shadow-sm p-4">
+        {{ form_start(form) }}
+
+        <div class="mb-3">
+            <label for="search" class="form-label">Rechercher un utilisateur</label>
+            <div class="input-group">
+                {{ form_widget(form.search, {'attr': {'class': 'form-control', 'placeholder': 'Entrez un pseudo...'}}) }}
+                <button class="btn btn-outline-primary" type="submit">🔍</button>
+            </div>
+            {{ form_errors(form.search) }}
+        </div>
+
+        {{ form_widget(form.recever) }}
+
+        <button type="submit" class="btn btn-primary w-100">📩 Envoyer l'invitation</button>
+
+        {{ form_end(form) }}
+    </div>
+</div>
 {% endblock %}

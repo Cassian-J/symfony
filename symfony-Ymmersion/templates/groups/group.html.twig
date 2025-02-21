@@ -4,8 +4,13 @@
 {% block navbar%}{% include 'navbar/navbar.html.twig' %}{% endblock %}
 {% block body %}
 <div class="container mt-4">
+    <div class="card mb-4">
+        <div class="card-body text-center">
+            <h5 class="card-title">Points du groupe</h5>
+            <p class="card-text display-4 text-primary">{{ group.point }}</p>
+        </div>
+    </div>
     <h2 class="mb-3 text-center">Les Membres</h2>
-
     {% if users is not empty %}
         <ul class="list-group">
             {% for user in users %}

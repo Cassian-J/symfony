@@ -43,7 +43,7 @@ final class HomeController extends AbstractController
         $group = $user->getGroupUuid();
         
         $total = null;
-        $tasks=null;
+        $allTasks=null;
         //$newConnectionDate = new \DateTime(); //Today
         $newConnectionDate = new \DateTime('2025-02-28 10:30:00'); //Set custom date
 
@@ -95,7 +95,7 @@ final class HomeController extends AbstractController
         return $this->render('home/index.html.twig', [
             'name' => $user->getPseudo(),
             'total' => $total,
-            'tasks' => $tasks,
+            'tasks' => $allTasks,
             'user'=> $user,
             'group'=>$group
         ]);

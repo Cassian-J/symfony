@@ -9,6 +9,11 @@
         <a class="btn btn-primary btn-lg" href="{{ path('task.create') }}">Créer une Tâche</a>
     </div>
 
+    {% if total is not null %}
+        <p> Gained : {{ total.totalGained }}</p>
+        <p> Lost : {{ total.totalLost }}</p>
+        <p> Total : {{ total.totalAll }}</p>
+    {% endif %}
     {% for task in tasks %}
     <div class="card mb-3 shadow-sm">
         <div class="card-body">

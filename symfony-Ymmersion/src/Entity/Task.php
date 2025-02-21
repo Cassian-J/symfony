@@ -46,6 +46,9 @@ class Task
     #[ORM\JoinColumn(nullable:true,name: 'GroupUuid', referencedColumnName: 'group_uuid')]
     private ?Groups $GroupUuid = null;
 
+    #[ORM\Column]
+    private ?bool $Done = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -172,6 +175,18 @@ class Task
     public function setIsGroupTask(bool $IsGroupTask): static
     {
         $this->IsGroupTask = $IsGroupTask;
+
+        return $this;
+    }
+
+    public function isDone(): ?bool
+    {
+        return $this->Done;
+    }
+
+    public function setDone(bool $Done): static
+    {
+        $this->Done = $Done;
 
         return $this;
     }

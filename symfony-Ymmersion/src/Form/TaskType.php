@@ -15,6 +15,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 
 class TaskType extends AbstractType
 {
@@ -32,6 +34,7 @@ class TaskType extends AbstractType
             ])
             ->add('Periodicity', ChoiceType::class, [
                 'choices' => [
+                    'Once' => 'once',
                     'Daily' => 'daily',
                     'Weekly' => 'weekly',
                 ],
@@ -73,6 +76,20 @@ class TaskType extends AbstractType
                 'attr' => ['class' => 'btn btn-primary'],
             ])
         ;
+
+        $builder->get('Days')->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
+            $data = $event->getData();
+            if (is_string($data)) {
+                $event->setData(explode(',', $data));
+            }
+        });
+
+        $builder->get('Days')->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+            $data = $event->getData();
+            if (is_string($data)) {
+                $event->setData(explode(',', $data));
+            }
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -16,10 +16,12 @@ use Symfony\Component\HttpFoundation\Request;
 final class HomeController extends AbstractController
 {
     private CookieController $cookieController;
+    private TaskController $taskController;
 
-    public function __construct(CookieController $cookieController)
+    public function __construct(CookieController $cookieController,TaskController $taskController)
     {
         $this->cookieController = $cookieController;
+        $this->taskController = $taskController;
     }
 
     #[Route('/', name: 'app_home')]
@@ -33,12 +35,57 @@ final class HomeController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $user->getGroupUuid();
+        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
+        if(!$group instanceof Groups){
+            return $this->cookieController->message('danger','groupe inexistant','groups.create');
+        }
+
+        $total = null;
         
-        $tasks = $entityManager->getRepository(Task::class)->findAll();
+        //$newConnectionDate = new \DateTime(); //Today
+        $newConnectionDate = new \DateTime('2025-02-28 10:30:00'); //Set custom date
+
+        // Check if this is the first connection of the day
+        
+        $lastConnection = $user->getLastConnection();
+        if ($newConnectionDate->format('Y-m-d') !== $lastConnection->format('Y-m-d')) {
+            
+            $today = $newConnectionDate;
+            $queryBuilder = $entityManager->createQueryBuilder();
+            $queryBuilder
+                ->select('u')
+                ->from(Users::class, 'u')
+                ->where('u.GroupUuid = :group')
+                ->andWhere('u.lastConnection >= :today')
+                ->setParameter('group', $group)
+                ->setParameter('today', $today)
+                ->orderBy('u.lastConnection', 'ASC')
+                ->setMaxResults(1);
+
+            $usersConnectedToday = $queryBuilder->getQuery()->getResult();
+            
+            // Get the first user connected today and check if it is the current user
+
+            if (empty($usersConnectedToday) || $usersConnectedToday[0]->getUserUuid() === $user->getUserUuid()) {
+                $oldestLastConnectedUser = $entityManager->getRepository(Users::class)->findBy(['GroupUuid' => $group], ['lastConnection' => 'ASC'], 1 );
+                if (!empty($oldestLastConnectedUser)) { //Error Case
+                    $oldestUserConnection = $oldestLastConnectedUser[0]->getLastConnection();
+                    // Calculate and update grouplog with all tasks not done between today and the last time a user of the group was connected
+                    $this->taskController->getAllTasksMissedSinceDate($oldestUserConnection, (clone $newConnectionDate)->modify('-1 day'), $user, $group, $entityManager);
+                }
+            }
+
+            // Get all the points obtained and lost from all users since current user's last connection
+            $total = $this->taskController->getAllPointsObtainedSinceLastConnection($lastConnection, $group, $entityManager);
+
+            $this->taskController->findAllTasksCurrentlyDue($user, $newConnectionDate, $entityManager); //Rested the done marker for todays' tasks
+        } 
+
+        $tasks = $entityManager->getRepository(Task::class)->findBy(['UserUuid'=>$user, 'Done'=>false]);
         $this->cookieController->updateLastConnection($request,$entityManager);
         return $this->render('home/index.html.twig', [
             'name' => $user->getPseudo(),
+            'total' => $total,
             'tasks' => $tasks,
             'user'=> $user
         ]);
@@ -67,6 +114,7 @@ final class HomeController extends AbstractController
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()){
+            $entityManager->persist($task);
             $entityManager->flush();
             return $this->cookieController->message('success','Task successfully updated','app_home');
         }
@@ -102,6 +150,7 @@ final class HomeController extends AbstractController
             $task->setUserUuid($user);
             $task->setGroupUuid($group);
             $task->setCreatedAt(new \DateTimeImmutable());
+            $task->setDone(false);
 
             $entityManager->persist($task);
             $entityManager->flush();
@@ -153,32 +202,41 @@ final class HomeController extends AbstractController
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
+
+
         $grouplog = new GroupLogs();
+
         switch($task->getDifficulty()){
-            case 0:
+            case 1:
                 $grouplog->setPoint(1);
                 break;
-            case 1:
+            case 2:
                 $grouplog->setPoint(2);
                 break;
-            case 2:
+            case 3:
                 $grouplog->setPoint(5);
                 break;
-            case 3:
+            case 4:
                 $grouplog->setPoint(10);
-                break;
-            default:
-                $grouplog->setPoint(0);
                 break;
         }
         $grouplog->setTaskId($task);
         $grouplog->setUserUuid($user);
         $grouplog->setGroupUuid($group);
-
+        $grouplog->setDate(new \DateTime());
         $entityManager->persist($grouplog);
+
+        $group->setPoint($group->getPoint()+$grouplog->getPoint());
+        $entityManager->persist($group);
+
+        $task->setDone(true);
+        $entityManager->persist($task);
+
         $entityManager->flush();
 
-        return $this->redirectToRoute('app_home');
+        $points = $grouplog->getPoint();
+        $point_str = (1 == $points) ? 'point' : 'points';
+        return $this->cookieController->message('success',"Congrats, you won $points $point_str",'app_home');
     }
 
     #[Route('/{id}/invalidate-task', name: 'task.invalidate')]
@@ -196,31 +254,16 @@ final class HomeController extends AbstractController
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
-        $grouplog = new GroupLogs();
-        switch($task->getDifficulty()){
-            case 0:
-                $grouplog->setPoint(-8);
-                break;
-            case 1:
-                $grouplog->setPoint(-5);
-                break;
-            case 2:
-                $grouplog->setPoint(-2);
-                break;
-            case 3:
-                $grouplog->setPoint(-1);
-                break;
-            default:
-                $grouplog->setPoint(0);
-                break;
-        }
-        $grouplog->setTaskId($task);
-        $grouplog->setUserUuid($user);
-        $grouplog->setGroupUuid($group);
 
-        $entityManager->persist($grouplog);
+        $this->taskController->logTaskFailure(new \DateTime(), $task, $user, $group, $entityManager);
+        
+        $task->setDone(true);
+        $entityManager->persist($task);
+
         $entityManager->flush();
 
-        return $this->redirectToRoute('app_home');
+        $points = abs($grouplog->getPoint());
+        $point_str = (1 == $points) ? 'point' : 'points';
+        return $this->cookieController->message('danger',"Dang, you lost $points $point_str.",'app_home');
     }
 }

@@ -23,7 +23,7 @@ final class GroupsController extends AbstractController
         $this->cookieController = $cookieController;
     }
 
-    #[Route('/groups', name: 'groups.show')]
+    #[Route('/group', name: 'groups.show')]
     public function group(Request $request,EntityManagerInterface $em): Response
     {
         $userUuid = $this->cookieController->getCookie($request);

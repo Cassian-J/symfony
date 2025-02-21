@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250220143743 extends AbstractMigration
+final class Version20250221072032 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -38,7 +38,7 @@ final class Version20250220143743 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_F11D61A2558828B5 ON invitation (Recever)');
         $this->addSql('CREATE INDEX IDX_F11D61A2A4872AF8 ON invitation (WhichGroup)');
         $this->addSql('CREATE TABLE task (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, title VARCHAR(250) NOT NULL, description CLOB DEFAULT NULL, color VARCHAR(6) NOT NULL, difficulty INTEGER NOT NULL, created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
-        , periodicity VARCHAR(255) NOT NULL, days VARCHAR(255) DEFAULT NULL, is_group_task BOOLEAN NOT NULL, UserUuid CHAR(36) DEFAULT NULL --(DC2Type:guid)
+        , periodicity VARCHAR(255) NOT NULL, days VARCHAR(255) DEFAULT NULL, is_group_task BOOLEAN NOT NULL, done BOOLEAN NOT NULL, UserUuid CHAR(36) DEFAULT NULL --(DC2Type:guid)
         , GroupUuid CHAR(36) DEFAULT NULL --(DC2Type:guid)
         , CONSTRAINT FK_527EDB252E46E5BF FOREIGN KEY (UserUuid) REFERENCES users (user_uuid) NOT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT FK_527EDB253D458CB8 FOREIGN KEY (GroupUuid) REFERENCES groups (group_uuid) NOT DEFERRABLE INITIALLY IMMEDIATE)');
         $this->addSql('CREATE INDEX IDX_527EDB252E46E5BF ON task (UserUuid)');

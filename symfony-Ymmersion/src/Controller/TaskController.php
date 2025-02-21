@@ -15,6 +15,13 @@ use Symfony\Component\Validator\Constraints\Date;
 
 final class TaskController extends AbstractController
 {
+    private GroupsController $groupsController;
+
+    public function __construct(GroupsController $groupsController)
+    {
+        $this->groupsController = $groupsController;
+    }
+
     // Check if a task is due based on periodicity
     public function isTaskDue(Task $task, \DateTime $date): bool
     {
@@ -116,8 +123,6 @@ final class TaskController extends AbstractController
 
         $group->setPoint($group->getPoint()+$grouplog->getPoint());
         $entityManager->persist($group);
-
-        $this->checkGroupPoints($group, $entityManager);
     }
 
     public function getAllPointsObtainedSinceLastConnection(\DateTime $date, Groups $group, EntityManagerInterface $entityManager): array
@@ -229,17 +234,5 @@ final class TaskController extends AbstractController
                 $this->logTaskFailure($date, $task, $user, $group, $entityManager);
             }
         }
-    }
-
-    public function checkGroupPoints(Groups $group, EntityManagerInterface $entityManager): Response
-    {
-        if ($group->getPoint() <= 0) {
-            // Supprimer le groupe en appelant la méthode delete de GroupsController
-            $groupsController = new GroupsController(new CookieController()); // Assurez-vous d'injecter les dépendances nécessaires
-            return $groupsController->delete($this->getRequest(), $entityManager);
-        }
-
-        // Si le groupe a encore des points, ne rien faire
-        return new Response(); // Ou une autre réponse appropriée
     }
 }

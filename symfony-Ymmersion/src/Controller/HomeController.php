@@ -24,7 +24,7 @@ final class HomeController extends AbstractController
     {
         $this->cookieController = $cookieController;
         $this->taskController = $taskController;
-        $this->newConnectionDate = new \DateTime(); //Set custom date
+        $this->newConnectionDate = new \DateTime();
         //$this->newConnectionDate = new \DateTime('2025-02-28 10:30:00'); //Set custom date
     }
 
@@ -50,46 +50,46 @@ final class HomeController extends AbstractController
         
         $lastConnection = $user->getLastConnection();
         if ($group!==null){
-        if ($newConnectionDate->format('Y-m-d') !== $lastConnection->format('Y-m-d')) {
-            
-            $today = $this->newConnectionDate;
-            $queryBuilder = $entityManager->createQueryBuilder();
-            $queryBuilder
-                ->select('u')
-                ->from(Users::class, 'u')
-                ->where('u.GroupUuid = :group')
-                ->andWhere('u.lastConnection >= :today')
-                ->setParameter('group', $group)
-                ->setParameter('today', $today)
-                ->orderBy('u.lastConnection', 'ASC')
-                ->setMaxResults(1);
+            if ($newConnectionDate->format('Y-m-d') !== $lastConnection->format('Y-m-d')) {
+                
+                $today = $this->newConnectionDate;
+                $queryBuilder = $entityManager->createQueryBuilder();
+                $queryBuilder
+                    ->select('u')
+                    ->from(Users::class, 'u')
+                    ->where('u.GroupUuid = :group')
+                    ->andWhere('u.lastConnection >= :today')
+                    ->setParameter('group', $group)
+                    ->setParameter('today', $today)
+                    ->orderBy('u.lastConnection', 'ASC')
+                    ->setMaxResults(1);
 
-            $usersConnectedToday = $queryBuilder->getQuery()->getResult();
-            
-            // Get the first user connected today and check if it is the current user
+                $usersConnectedToday = $queryBuilder->getQuery()->getResult();
+                
+                // Get the first user connected today and check if it is the current user
 
-            if (empty($usersConnectedToday) || $usersConnectedToday[0]->getUserUuid() === $user->getUserUuid()) {
-                $oldestLastConnectedUser = $entityManager->getRepository(Users::class)->findBy(['GroupUuid' => $group], ['lastConnection' => 'ASC'], 1 );
-                if (!empty($oldestLastConnectedUser)) { //Error Case
-                    $oldestUserConnection = $oldestLastConnectedUser[0]->getLastConnection();
-                    // Calculate and update grouplog with all tasks not done between today and the last time a user of the group was connected
-                    $this->taskController->getAllTasksMissedSinceDate($oldestUserConnection, (clone $this->newConnectionDate), $user, $group, $entityManager);
+                if (empty($usersConnectedToday) || $usersConnectedToday[0]->getUserUuid() === $user->getUserUuid()) {
+                    $oldestLastConnectedUser = $entityManager->getRepository(Users::class)->findBy(['GroupUuid' => $group], ['lastConnection' => 'ASC'], 1 );
+                    if (!empty($oldestLastConnectedUser)) { //Error Case
+                        $oldestUserConnection = $oldestLastConnectedUser[0]->getLastConnection();
+                        // Calculate and update grouplog with all tasks not done between today and the last time a user of the group was connected
+                        $this->taskController->getAllTasksMissedSinceDate($oldestUserConnection, (clone $this->newConnectionDate), $user, $group, $entityManager);
+                    }
                 }
-            }
 
-            // Get all the points obtained and lost from all users since current user's last connection
-            $total = $this->taskController->getAllPointsObtainedSinceLastConnection($lastConnection, $group, $entityManager);
+                // Get all the points obtained and lost from all users since current user's last connection
+                $total = $this->taskController->getAllPointsObtainedSinceLastConnection($lastConnection, $group, $entityManager);
 
-            $this->taskController->findAllTasksCurrentlyDue($user, $this->newConnectionDate, $entityManager); //Rested the done marker for today's tasks
+                $this->taskController->findAllTasksCurrentlyDue($user, $this->newConnectionDate, $entityManager); //Rested the done marker for today's tasks
 
-        } 
+            } 
 
-        $tasks = $entityManager->getRepository(Task::class)->findBy(['UserUuid'=>$user, 'Done'=>false]);
-        $groupTasks = $this->taskController->findAllGroupTasksCurrentlyDue($group, $user, $this->newConnectionDate, $entityManager);
-        
-        $allTasks = array_merge($tasks, $groupTasks);
-        $this->cookieController->updateLastConnection($request,$entityManager);
+            $tasks = $entityManager->getRepository(Task::class)->findBy(['UserUuid'=>$user, 'Done'=>false]);
+            $groupTasks = $this->taskController->findAllGroupTasksCurrentlyDue($group, $user, $this->newConnectionDate, $entityManager);
             
+            $allTasks = array_merge($tasks, $groupTasks);
+            $this->cookieController->updateLastConnection($request,$entityManager);
+                
         }
         return $this->render('home/index.html.twig', [
             'name' => $user->getPseudo(),
@@ -262,7 +262,7 @@ final class HomeController extends AbstractController
 
         //make sure group task is created in user is group owner
         if($task->isGroupTask()){
-            
+            $this->taskController->validateGroupTask($user, $group, $this->newConnectionDate, $task, $entityManager);
         } else {
             $group->setPoint($group->getPoint()+$grouplog->getPoint());
             $entityManager->persist($group);

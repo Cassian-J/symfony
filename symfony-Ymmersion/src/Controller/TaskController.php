@@ -155,8 +155,20 @@ final class TaskController extends AbstractController
         $groupTasks = $entityManager->getRepository(Task::class)->findBy(['GroupUuid'=>$group, 'IsGroupTask'=>true]);
         foreach ($groupTasks as $groupTask) {
             if ($this->isTaskDue($groupTask, $date)) {
-                //check in grouplogs if this user has dont this grouptask at the date specified
-                $groupLog = $entityManager->getRepository(GroupLogs::class)->findBy(['UserUuid'=>$user, 'date'=>$date, 'TaskId'=>$groupTask]);
+                //check in grouplogs if this user has done this grouptask at the date specified
+                $queryBuilder = $entityManager->createQueryBuilder();
+                $queryBuilder
+                    ->select('gl')
+                    ->from(GroupLogs::class, 'gl')
+                    ->where('gl.UserUuid = :user')
+                    ->andWhere('DATE(gl.date) = DATE(:date)') //to compare dates but not time
+                    ->andWhere('gl.TaskId = :taskId')
+                    ->setParameter('user', $user)
+                    ->setParameter('date', $date)
+                    ->setParameter('taskId', $groupTask);
+                
+                $groupLog = $queryBuilder->getQuery()->getResult();
+                
                 if ($groupLog===[]){
                     $dueTasks[] = $groupTask;
                 }
@@ -167,9 +179,22 @@ final class TaskController extends AbstractController
 
     public function validateGroupTask(Users $user, Groups $group, \DateTime $date, Task $task, EntityManagerInterface $entityManager)
     {
-        $groupLogs = $entityManager->getRepository(GroupLogs::class)->findBy(['GroupUuid'=>$group, 'date'=>$date, 'TaskId'=>$groupTask]);
+        $queryBuilder = $entityManager->createQueryBuilder();
+        $queryBuilder
+            ->select('gl')
+            ->from(GroupLogs::class, 'gl')
+            ->where('gl.GroupUuid = :group')
+            ->andWhere('DATE(gl.date) = DATE(:date)') //to compare dates but not time
+            ->andWhere('gl.TaskId = :taskId')
+            ->setParameter('group', $group)
+            ->setParameter('date', $date)
+            ->setParameter('taskId', $groupTask);
+        
+        $groupLogs = $queryBuilder->getQuery()->getResult();
+        
         $nUsersInGroup = count($entityManager->getRepository(Users::class)->findBy(['GroupUuid'=>$group]));
-        if(count($groupTaskLogs) == $nUserInGroup) {
+        
+        if(count($groupLogs) == $nUsersInGroup) {
             $group->setPoint($group->getPoint()+$groupLogs[0]->getPoint());
             $entityManager->persist($group);
     
@@ -184,7 +209,21 @@ final class TaskController extends AbstractController
     {
         $usersInGroup = $entityManager->getRepository(Users::class)->findBy(['GroupUuid'=>$group]);
         foreach ($usersInGroup as $user) {
-            $groupLog = $entityManager->getRepository(GroupLogs::class)->findBy(['UserUuid'=> $user, 'GroupUuid'=>$group, 'date'=>$date, 'TaskId'=>$task]);
+            $queryBuilder = $entityManager->createQueryBuilder();
+            $queryBuilder
+                ->select('gl')
+                ->from(GroupLogs::class, 'gl')
+                ->where('gl.UserUuid = :user')
+                ->andWhere('gl.GroupUuid = :group')
+                ->andWhere('DATE(gl.date) = DATE(:date)') //to compare dates but not time
+                ->andWhere('gl.TaskId = :taskId')
+                ->setParameter('user', $user)
+                ->setParameter('group', $group)
+                ->setParameter('date', $date)
+                ->setParameter('taskId', $task);
+            
+            $groupLog = $queryBuilder->getQuery()->getResult();
+            
             if ($groupLog===[]){
                 $this->logTaskFailure($date, $task, $user, $group, $entityManager);
             }

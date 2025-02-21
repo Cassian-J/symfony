@@ -13,19 +13,22 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\Constraints\Date;
 
 final class HomeController extends AbstractController
 {
     private CookieController $cookieController;
     private TaskController $taskController;
     private DateTime $newConnectionDate;
+    private GroupsController $groupsController;
 
-    public function __construct(CookieController $cookieController,TaskController $taskController)
+    public function __construct(CookieController $cookieController,TaskController $taskController, GroupsController $groupsController)
     {
         $this->cookieController = $cookieController;
         $this->taskController = $taskController;
         $this->newConnectionDate = new \DateTime();
         //$this->newConnectionDate = new \DateTime('2025-02-28 10:30:00'); //Set custom date
+        $this->groupsController = $groupsController;
     }
 
     #[Route('/', name: 'app_home')]
@@ -40,6 +43,11 @@ final class HomeController extends AbstractController
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
         $group = $user->getGroupUuid();
+        
+        if ($group instanceof Groups) {
+            // Vérifier les points du groupe à chaque connexion
+            return $this->groupsController->checkGroupPoints($group, $entityManager, $request);
+        }
         
         $total = null;
         $allTasks=null;
@@ -157,6 +165,14 @@ final class HomeController extends AbstractController
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
+        $taskCreated = $entityManager->getRepository(Task::class)->findBy(['UserUuid' => $user]);
+        if (!empty($taskCreated)) {
+            $taskGroupCreated = $entityManager->getRepository(Task::class)->findBy(['GroupUuid' => $group]);
+            if (!empty($taskGroupCreated) || $group->getCreator() === $user) {
+                return $this->cookieController->message('danger', 'You cannot create a Task because you have already created one.', 'app_home');
+            }
+        }
+
         $task = new Task();
         
         $form = $this->createForm(TaskType::class, $task);

@@ -90,20 +90,20 @@ final class GroupsController extends AbstractController
         ]);
     }
 
-    #[Route('/groups/delete', name: 'groups.delete',methods:['DELETE'])]
-    public function delete(Request $request, EntityManagerInterface $em)
-    {   
+    #[Route('/groups/delete', name: 'groups.delete', methods: ['DELETE'])]
+    public function delete(Request $request, EntityManagerInterface $em): Response
+    {
         $userUuid = $this->cookieController->getCookie($request);
-        if(!is_string($userUuid )){
-            return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
+        if (!is_string($userUuid)) {
+            return $this->cookieController->message('danger', 'utilisateur non authentifié', 'app_register');
         }
         $user = $this->cookieController->getUserByCookie($userUuid, $em);
-        if(!$user instanceof Users){
-            return $this->cookieController->message('danger','utilisateur inexistant','app_register');
+        if (!$user instanceof Users) {
+            return $this->cookieController->message('danger', 'utilisateur inexistant', 'app_register');
         }
         $group = $user->getGroupUuid();
-        if(!$group instanceof Groups){
-            return $this->cookieController->message('danger','groupe inexistant','groups.create');
+        if (!$group instanceof Groups) {
+            return $this->cookieController->message('danger', 'groupe inexistant', 'groups.create');
         }
 
         $users = $em->getRepository(Users::class)->findby(['GroupUuid'=>$group]);
@@ -119,7 +119,7 @@ final class GroupsController extends AbstractController
         }
         $em->remove($group);
         $em->flush();
-        return $this->cookieController->message('success','groupe supprimé','app_home');
+        return $this->cookieController->message('success', 'Le groupe a été supprimé car il n\'avait pas atteint les points nécessaires.', 'app_home');
     }
     
     #[Route('/groups/quit', name: 'groups.quit')]
@@ -142,5 +142,16 @@ final class GroupsController extends AbstractController
         }
         $em->flush();
         return $this->cookieController->message('success',"vous êtes partis du groupe $groupName",'app_admin');
+    }
+
+    public function checkGroupPoints(Groups $group, EntityManagerInterface $entityManager, Request $request): Response
+    {
+        if ($group->getPoint() <= 0) {
+            // Supprimer le groupe
+            return $this->delete($request, $entityManager);
+        }
+
+        // Si le groupe a encore des points, ne rien faire
+        return new Response(); // Ou une autre réponse appropriée
     }
 }

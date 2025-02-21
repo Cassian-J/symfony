@@ -68,12 +68,12 @@ final class HomeController extends AbstractController
                 
                 // Get the first user connected today and check if it is the current user
 
-                if (empty($usersConnectedToday) || $usersConnectedToday[0]->getUserUuid() === $user->getUserUuid()) {
+                if (empty($usersConnectedToday) || $usersConnectedToday[0]->getUserUuid() === $user) {
                     $oldestLastConnectedUser = $entityManager->getRepository(Users::class)->findBy(['GroupUuid' => $group], ['lastConnection' => 'ASC'], 1 );
                     if (!empty($oldestLastConnectedUser)) { //Error Case
                         $oldestUserConnection = $oldestLastConnectedUser[0]->getLastConnection();
                         // Calculate and update grouplog with all tasks not done between today and the last time a user of the group was connected
-                        $this->taskController->getAllTasksMissedSinceDate($oldestUserConnection, (clone $this->newConnectionDate), $user, $group, $entityManager);
+                        $this->taskController->getAllTasksMissedSinceDate($oldestUserConnection, $this->newConnectionDate, $user, $group, $entityManager);
                     }
                 }
 

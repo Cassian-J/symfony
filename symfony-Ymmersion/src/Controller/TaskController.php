@@ -66,8 +66,7 @@ final class TaskController extends AbstractController
         foreach ($tasks as $task) {
             if($this->isTaskDue($task, $currentDate) && $task->isGroupTask() && !$task->isDone()) {
                 $this->invalidateGroupTask($group, clone $currentDate, $task, $entityManager);
-            }
-            else if ($this->isTaskDue($task, $currentDate) && !$task->isDone()) {
+            } elseif ($this->isTaskDue($task, $currentDate) && !$task->isDone()) {
                 $this->logTaskFailure(clone $currentDate, $task, $user, $group, $entityManager);
             }
         }
@@ -78,8 +77,7 @@ final class TaskController extends AbstractController
             foreach ($tasks as $task) {
                 if($this->isTaskDue($task, $currentDate) && $task->IsGroupTask()) {
                     $this->invalidateGroupTask($group, clone $currentDate, $task, $entityManager);
-                }
-                else if ($this->isTaskDue($task, $currentDate)) {
+                } elseif ($this->isTaskDue($task, $currentDate)) {
                     $this->logTaskFailure(clone $currentDate, $task, $user, $group, $entityManager);
                 }
             }

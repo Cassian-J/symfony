@@ -35,19 +35,17 @@ final class HomeController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
-        if(!$group instanceof Groups){
-            return $this->cookieController->message('danger','groupe inexistant','groups.create');
-        }
-
-        $total = null;
+        $group = $user->getGroupUuid();
         
+        $total = null;
+        $tasks=null;
         //$newConnectionDate = new \DateTime(); //Today
         $newConnectionDate = new \DateTime('2025-02-28 10:30:00'); //Set custom date
 
         // Check if this is the first connection of the day
         
         $lastConnection = $user->getLastConnection();
+        if ($group!==null){
         if ($newConnectionDate->format('Y-m-d') !== $lastConnection->format('Y-m-d')) {
             
             $today = $newConnectionDate;
@@ -83,11 +81,14 @@ final class HomeController extends AbstractController
 
         $tasks = $entityManager->getRepository(Task::class)->findBy(['UserUuid'=>$user, 'Done'=>false]);
         $this->cookieController->updateLastConnection($request,$entityManager);
+            
+        }
         return $this->render('home/index.html.twig', [
             'name' => $user->getPseudo(),
             'total' => $total,
             'tasks' => $tasks,
-            'user'=> $user
+            'user'=> $user,
+            'group'=>$group
         ]);
     }
 

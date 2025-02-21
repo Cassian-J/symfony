@@ -5,9 +5,11 @@
 {% block body %}
 <div class="container mt-4">
 
-    <div class="text-center my-3">
+    {% if group is null %}
+        <a class="btn btn-primary btn-lg" href="{{ path('groups.create') }}">Créer un Groupe</a>
+    {% else %}
         <a class="btn btn-primary btn-lg" href="{{ path('task.create') }}">Créer une Tâche</a>
-    </div>
+    {% endif %}
 
     {% if total is not null %}
         <p> Gained : {{ total.totalGained }}</p>

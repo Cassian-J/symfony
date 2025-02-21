@@ -16,10 +16,12 @@ use Symfony\Component\HttpFoundation\Request;
 final class HomeController extends AbstractController
 {
     private CookieController $cookieController;
+    private TaskController $taskController;
 
-    public function __construct(CookieController $cookieController)
+    public function __construct(CookieController $cookieController,TaskController $taskController)
     {
         $this->cookieController = $cookieController;
+        $this->taskController = $taskController;
     }
 
     #[Route('/', name: 'app_home')]
@@ -33,9 +35,22 @@ final class HomeController extends AbstractController
         if(!$user instanceof Users){
             return $this->cookieController->message('danger','utilisateur inexistant','app_register');
         }
-        $group = $user->getGroupUuid();
+        $group = $this->cookieController->getGroupsByUser($user, $entityManager);
+        if(!$group instanceof Groups){
+            return $this->cookieController->message('danger','groupe inexistant','groups.create');
+        }
+        $this->cookieController->updateLastConnection($request,$entityManager);
         
-        $tasks = $entityManager->getRepository(Task::class)->findAll();
+        // Check if this is the first connection of the day
+        //$newConnectionDate = new \DateTime(); //Today
+        $newConnectionDate = new \DateTime('2025-02-22 10:30:00'); //Set custom date
+        $lastConnection = $user->getLastConnection();
+        
+        if ($newConnectionDate->format('Y-m-d') !== $lastConnection->format('Y-m-d')) {
+            $this->taskController->findAllTasksCurrentlyDue($newConnectionDate, $entityManager);
+        } 
+
+        $tasks = $entityManager->getRepository(Task::class)->findBy(['UserUuid'=>$userUuid, 'Done'=>false]);
         $this->cookieController->updateLastConnection($request,$entityManager);
         return $this->render('home/index.html.twig', [
             'name' => $user->getPseudo(),
@@ -101,7 +116,7 @@ final class HomeController extends AbstractController
             $task->setUserUuid($user);
             $task->setGroupUuid($group);
             $task->setCreatedAt(new \DateTimeImmutable());
-            $task-setDone(false);
+            $task->setDone(false);
 
             $entityManager->persist($task);
             $entityManager->flush();
@@ -153,6 +168,7 @@ final class HomeController extends AbstractController
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
 
+
         $grouplog = new GroupLogs();
 
         switch($task->getDifficulty()){
@@ -167,9 +183,6 @@ final class HomeController extends AbstractController
                 break;
             case 4:
                 $grouplog->setPoint(10);
-                break;
-            default:
-                $grouplog->setPoint(0);
                 break;
         }
         $grouplog->setTaskId($task);
@@ -206,34 +219,9 @@ final class HomeController extends AbstractController
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
-        $grouplog = new GroupLogs();
-        switch($task->getDifficulty()){
-            case 1:
-                $grouplog->setPoint(-8);
-                break;
-            case 2:
-                $grouplog->setPoint(-5);
-                break;
-            case 3:
-                $grouplog->setPoint(-2);
-                break;
-            case 4:
-                $grouplog->setPoint(-1);
-                break;
-            default:
-                $grouplog->setPoint(0);
-                break;
-        }
-        $grouplog->setTaskId($task);
-        $grouplog->setUserUuid($user);
-        $grouplog->setGroupUuid($group);
-        $grouplog->setDate(new \DateTime());
 
-        $entityManager->persist($grouplog);
-
-        $group->setPoint($group->getPoint()+$grouplog->getPoint());
-        $entityManager->persist($group);
-
+        $this->taskController->logTaskFailure(new \DateTime(), $task, $user, $group, $entityManager);
+        
         $task->setDone(true);
         $entityManager->persist($task);
 

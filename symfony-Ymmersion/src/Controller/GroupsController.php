@@ -120,6 +120,7 @@ final class GroupsController extends AbstractController
         $em->flush();
         return $this->cookieController->message('success','groupe supprimé','app_home');
     }
+    
     #[Route('/groups/quit', name: 'groups.quit')]
     public function quit(Request $request, EntityManagerInterface $em)
     {   

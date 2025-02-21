@@ -43,13 +43,12 @@ final class TaskController extends AbstractController
             }
             $entityManager->persist($task);
         }
-        
+
         $entityManager->flush();
     }
 
     public function getAllTasksMissedSinceDate(\DateTime $startDate, \DateTime $endDate, Users $user, Groups $group, EntityManagerInterface $entityManager)
     {
-        //$tasks = $entityManager->getRepository(Task::class)->findBy(['Periodicity' => ['$ne' => 'once'], 'GroupUuid'=>$group]); //Get all tasks with periodicity from all users from the group
         $queryBuilder = $entityManager->createQueryBuilder();
         $queryBuilder
             ->select('t')
@@ -65,7 +64,10 @@ final class TaskController extends AbstractController
 
         // For tasks due on the last day of connection, check for tasks that have been done that day and ignore them
         foreach ($tasks as $task) {
-            if ($this->isTaskDue($task, $currentDate) && !$task->isDone()) {
+            if($this->isTaskDue($task, $currentDate) && $task->isGroupTask()) {
+                $this->invalidateGroupTask($group, clone $currentDate, $task, $entityManager);
+            }
+            else if ($this->isTaskDue($task, $currentDate) && !$task->isDone()) {
                 $this->logTaskFailure(clone $currentDate, $task, $user, $group, $entityManager);
             }
         }
@@ -74,7 +76,10 @@ final class TaskController extends AbstractController
         //Check the rest of the days without checking if they are marked as done
         while ($currentDate < $endDate) {
             foreach ($tasks as $task) {
-                if ($this->isTaskDue($task, $currentDate)) {
+                if($this->isTaskDue($task, $currentDate) && $task->IsGroupTask()) {
+                    $this->invalidateGroupTask($group, clone $currentDate, $task, $entityManager);
+                }
+                else if ($this->isTaskDue($task, $currentDate)) {
                     $this->logTaskFailure(clone $currentDate, $task, $user, $group, $entityManager);
                 }
             }
@@ -139,5 +144,47 @@ final class TaskController extends AbstractController
         }
 
         return $total;
+    }
+
+    public function findAllGroupTasksCurrentlyDue(Groups $group, Users $user, \DateTime $date, EntityManagerInterface $entityManager):array
+    {
+        $dueTasks = [];
+        $groupTasks = $entityManager->getRepository(Task::class)->findBy(['GroupUuid'=>$group, 'IsGroupTask'=>true]);
+        foreach ($groupTasks as $groupTask) {
+            if ($this->isTaskDue($groupTask, $date)) {
+                //check in grouplogs if this user has dont this grouptask at the date specified
+                $groupLog = $entityManager->getRepository(GroupLogs::class)->findBy(['UserUuid'=>$user, 'date'=>$date, 'TaskId'=>$groupTask]);
+                if ($groupLog===[]){
+                    $dueTasks[] = $groupTask;
+                }
+            }
+        }
+        return $dueTasks;
+    }
+
+    public function validateGroupTask(Users $user, Groups $group, \DateTime $date, Task $task, EntityManagerInterface $entityManager)
+    {
+        $groupLogs = $entityManager->getRepository(GroupLogs::class)->findBy(['GroupUuid'=>$group, 'date'=>$date, 'TaskId'=>$groupTask]);
+        $nUsersInGroup = count($entityManager->getRepository(Users::class)->findBy(['GroupUuid'=>$group]));
+        if(count($groupTaskLogs) == $nUserInGroup) {
+            $group->setPoint($group->getPoint()+$groupLogs[0]->getPoint());
+            $entityManager->persist($group);
+    
+            $task->setDone(true);
+            $entityManager->persist($task);
+        }
+        
+        $entityManager->flush();
+    }
+
+    public function invalidateGroupTask(Groups $group, \DateTime $date, Task $task, EntityManagerInterface $entityManager)
+    {
+        $usersInGroup = $entityManager->getRepository(Users::class)->findBy(['GroupUuid'=>$group]);
+        foreach ($usersInGroup as $user) {
+            $groupLog = $entityManager->getRepository(GroupLogs::class)->findBy(['UserUuid'=> $user, 'GroupUuid'=>$group, 'date'=>$date, 'TaskId'=>$task]);
+            if ($groupLog===[]){
+                $this->logTaskFailure($date, $task, $user, $group, $entityManager);
+            }
+        }
     }
 }

@@ -187,10 +187,17 @@ final class HomeController extends AbstractController
             //make sure group task is created in user is group owner
             if($task->isGroupTask()){
                 $creator = $entityManager->getRepository(Users::class)->find($group->getCreator());
+                $taskGroupCreated = $entityManager->getRepository(Task::class)->findBy(['GroupUuid' => $group]);
                 if($user !== $creator) {
                     return $this->cookieController->message('danger','You cannot create a Group Task because you are not the owner of the group.','app_home');
+                }elseif(!empty($taskGroupCreated)){
+                    return $this->cookieController->message('danger', 'You cannot create a Task because you have already created one.', 'app_home');
                 }
             } else {
+                $taskCreated = $entityManager->getRepository(Task::class)->findBy(['UserUuid' => $user]);
+                if (!empty($taskCreated)) {
+                    return $this->cookieController->message('danger', 'You cannot create a Task because you have already created one.', 'app_home');
+                }
                 $task->setUserUuid($user);
             }
 

@@ -89,9 +89,9 @@ final class GroupsController extends AbstractController
         ]);
     }
 
-    #[Route('/groups/delete', name: 'groups.delete',methods:['DELETE'])]
-    public function delete(Request $request, EntityManagerInterface $em)
-    {   
+    #[Route('/groups/delete', name: 'groups.delete', methods: ['DELETE'])]
+    public function delete(Request $request, EntityManagerInterface $em): Response
+    {
         $userUuid = $this->cookieController->getCookie($request);
         if(!is_string($userUuid )){
             return $this->cookieController->message('danger','utilisateur non authentifié','app_register');
@@ -118,7 +118,7 @@ final class GroupsController extends AbstractController
         }
         $em->remove($group);
         $em->flush();
-        return $this->cookieController->message('success','groupe supprimé','app_home');
+        return $this->cookieController->message('success', 'Le groupe a été supprimé car il n\'avait pas atteint les points nécessaires.', 'app_home');
     }
     
     #[Route('/groups/quit', name: 'groups.quit')]
@@ -141,17 +141,5 @@ final class GroupsController extends AbstractController
         }
         $em->flush();
         return $this->cookieController->message('success',"vous êtes partis du groupe $groupName",'app_admin');
-    }
-
-    public function checkGroupPoints(Groups $group, EntityManagerInterface $entityManager): Response
-    {
-        if ($group->getPoint() < 0) {
-            $entityManager->remove($group);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_home', [
-                'message' => 'Le groupe a été supprimé car ses points sont à 0 ou négatifs.'
-            ]);
-        }
     }
 }

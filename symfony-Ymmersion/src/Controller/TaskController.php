@@ -11,6 +11,7 @@ use App\Entity\Users;
 use App\Entity\Groups;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\Constraints\Date;
 
 final class TaskController extends AbstractController
 {
@@ -228,5 +229,17 @@ final class TaskController extends AbstractController
                 $this->logTaskFailure($date, $task, $user, $group, $entityManager);
             }
         }
+    }
+
+    public function checkGroupPoints(Groups $group, EntityManagerInterface $entityManager): Response
+    {
+        if ($group->getPoint() <= 0) {
+            // Supprimer le groupe en appelant la méthode delete de GroupsController
+            $groupsController = new GroupsController(new CookieController()); // Assurez-vous d'injecter les dépendances nécessaires
+            return $groupsController->delete($this->getRequest(), $entityManager);
+        }
+
+        // Si le groupe a encore des points, ne rien faire
+        return new Response(); // Ou une autre réponse appropriée
     }
 }

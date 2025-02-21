@@ -10,6 +10,7 @@ use App\Entity\GroupLogs;
 use App\Entity\Users;
 use App\Entity\Groups;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 final class TaskController extends AbstractController
 {
@@ -109,6 +110,8 @@ final class TaskController extends AbstractController
 
         $group->setPoint($group->getPoint()+$grouplog->getPoint());
         $entityManager->persist($group);
+
+        $this->checkGroupPoints($group, $entityManager);
     }
 
     public function getAllPointsObtainedSinceLastConnection(\DateTime $date, Groups $group, EntityManagerInterface $entityManager): array

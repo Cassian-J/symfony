@@ -39,6 +39,8 @@ final class HomeController extends AbstractController
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
+
+        $total = null;
         
         //$newConnectionDate = new \DateTime(); //Today
         $newConnectionDate = new \DateTime('2025-02-28 10:30:00'); //Set custom date
@@ -63,14 +65,18 @@ final class HomeController extends AbstractController
             $usersConnectedToday = $queryBuilder->getQuery()->getResult();
             
             // Get the first user connected today and check if it is the current user
-            
+
             if (empty($usersConnectedToday) || $usersConnectedToday[0]->getUserUuid() === $user->getUserUuid()) {
                 $oldestLastConnectedUser = $entityManager->getRepository(Users::class)->findBy(['GroupUuid' => $group], ['lastConnection' => 'ASC'], 1 );
                 if (!empty($oldestLastConnectedUser)) { //Error Case
                     $oldestUserConnection = $oldestLastConnectedUser[0]->getLastConnection();
+                    // Calculate and update grouplog with all tasks not done between today and the last time a user of the group was connected
                     $this->taskController->getAllTasksMissedSinceDate($oldestUserConnection, (clone $newConnectionDate)->modify('-1 day'), $user, $group, $entityManager);
                 }
             }
+
+            // Get all the points obtained and lost from all users since current user's last connection
+            $total = $this->taskController->getAllPointsObtainedSinceLastConnection($lastConnection, $group, $entityManager);
 
             $this->taskController->findAllTasksCurrentlyDue($user, $newConnectionDate, $entityManager); //Rested the done marker for todays' tasks
         } 
@@ -79,6 +85,7 @@ final class HomeController extends AbstractController
         $this->cookieController->updateLastConnection($request,$entityManager);
         return $this->render('home/index.html.twig', [
             'name' => $user->getPseudo(),
+            'total' => $total,
             'tasks' => $tasks,
         ]);
     }

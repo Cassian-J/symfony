@@ -110,4 +110,34 @@ final class TaskController extends AbstractController
         $group->setPoint($group->getPoint()+$grouplog->getPoint());
         $entityManager->persist($group);
     }
+
+    public function getAllPointsObtainedSinceLastConnection(\DateTime $date, Groups $group, EntityManagerInterface $entityManager): array
+    {
+        $total = [
+            "totalLost" => 0,
+            "totalGained" => 0,
+            "totalAll" => 0
+        ];
+        $queryBuilder = $entityManager->createQueryBuilder();
+        $queryBuilder
+            ->select('gl')
+            ->from(GroupLogs::class, 'gl')
+            ->where('gl.GroupUuid = :group')
+            ->andWhere('gl.date >= :startDate')
+            ->setParameter('group', $group)
+            ->setParameter('startDate', $date)
+            ->orderBy('gl.date', 'ASC');
+
+        $groupLogs = $queryBuilder->getQuery()->getResult();
+        foreach ($groupLogs as $log) {
+            if ($log->getPoint() < 0) {
+                $total["totalLost"] -= $log->getPoint();
+            } else {
+                $total["totalGained"] += $log->getPoint();
+            }
+            $total["totalAll"] += $log->getPoint();
+        }
+
+        return $total;
+    }
 }

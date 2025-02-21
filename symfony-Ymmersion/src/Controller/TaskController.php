@@ -31,9 +31,9 @@ final class TaskController extends AbstractController
     }
 
     //Change state of previously done tasks if they are due again today
-    public function findAllTasksCurrentlyDue(\DateTime $date, EntityManagerInterface $entityManager)
+    public function findAllTasksCurrentlyDue(Users $user, \DateTime $date, EntityManagerInterface $entityManager)
     {
-        $tasks = $entityManager->getRepository(Task::class)->findAll();
+        $tasks = $entityManager->getRepository(Task::class)->findBy(['UserUuid'=>$user]);
 
         foreach ($tasks as $task) {
             if ($this->isTaskDue($task, $date)) {

@@ -39,18 +39,37 @@ final class HomeController extends AbstractController
         if(!$group instanceof Groups){
             return $this->cookieController->message('danger','groupe inexistant','groups.create');
         }
-        $this->cookieController->updateLastConnection($request,$entityManager);
         
         // Check if this is the first connection of the day
         //$newConnectionDate = new \DateTime(); //Today
-        $newConnectionDate = new \DateTime('2025-02-22 10:30:00'); //Set custom date
+        $newConnectionDate = new \DateTime('2025-02-28 10:30:00'); //Set custom date
         $lastConnection = $user->getLastConnection();
         
         if ($newConnectionDate->format('Y-m-d') !== $lastConnection->format('Y-m-d')) {
-            $this->taskController->findAllTasksCurrentlyDue($newConnectionDate, $entityManager);
+            
+            $today = $newConnectionDate;
+            $tomorrow = $newConnectionDate->modify('+1 day');
+            $usersConnectedToday = $entityManager->getRepository(Users::class)->findBy([
+                'GroupUuid' => $group,
+                'lastConnection' => ['>=', $today, '<', $tomorrow]
+            ], ['lastConnection' => 'ASC'], 1);
+            
+            // Get the first user connected today and check if it is the current user
+            
+            if (empty($usersConnectedToday) || $usersConnectedToday[0]->getUserUuid() === $user->getUserUuid()) {
+                $oldestLastConnectedUser = $entityManager->getRepository(Users::class)->findBy(['GroupUuid' => $group], ['lastConnection' => 'ASC'], 1 );
+                if (!empty($oldestLastConnectedUser)) { //Error Case
+                    $oldestUserConnection = $oldestLastConnectedUser[0]->getLastConnection();
+                    $this->taskController->getAllTasksMissedSinceDate($oldestUserConnection, $newConnectionDate, $user, $group, $entityManager);
+                }
+            }
+
+            $this->taskController->findAllTasksCurrentlyDue($user, $newConnectionDate, $entityManager); //Rested the done marker for todays' tasks
         } 
 
-        $tasks = $entityManager->getRepository(Task::class)->findBy(['UserUuid'=>$userUuid, 'Done'=>false]);
+        $this->cookieController->updateLastConnection($request,$entityManager);
+
+        $tasks = $entityManager->getRepository(Task::class)->findBy(['UserUuid'=>$user, 'Done'=>false]);
         $this->cookieController->updateLastConnection($request,$entityManager);
         return $this->render('home/index.html.twig', [
             'name' => $user->getPseudo(),

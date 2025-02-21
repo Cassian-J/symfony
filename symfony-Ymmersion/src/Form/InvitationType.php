@@ -19,8 +19,7 @@ class InvitationType extends AbstractType
                 'mapped' => false,
                 'label' => 'Rechercher un utilisateur',
             ])
-            ->add('recever', HiddenType::class)
-            ->add('send', SubmitType::class, ['label' => 'Envoyer l\'invitation']);
+            ->add('recever', HiddenType::class);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

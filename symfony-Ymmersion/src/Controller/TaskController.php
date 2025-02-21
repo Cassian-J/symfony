@@ -185,7 +185,7 @@ final class TaskController extends AbstractController
             ->andWhere('gl.TaskId = :taskId')
             ->setParameter('group', $group)
             ->setParameter('date', $date)
-            ->setParameter('taskId', $groupTask);
+            ->setParameter('taskId', $task);
         
         $groupLogs = $queryBuilder->getQuery()->getResult();
         

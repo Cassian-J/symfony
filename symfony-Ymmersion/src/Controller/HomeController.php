@@ -51,8 +51,8 @@ final class HomeController extends AbstractController
         
         $total = null;
         $allTasks=null;
-        //$newConnectionDate = new \DateTime(); //Today
-        $newConnectionDate = new \DateTime('2025-02-28 10:30:00'); //Set custom date
+        $newConnectionDate = new \DateTime(); //Today
+        //$newConnectionDate = new \DateTime('2025-02-28 10:30:00'); //Set custom date
 
         // Check if this is the first connection of the day
         

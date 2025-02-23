@@ -46,7 +46,10 @@ final class HomeController extends AbstractController
         
         if ($group instanceof Groups) {
             // Vérifier les points du groupe à chaque connexion
-            return $this->groupsController->checkGroupPoints($group, $entityManager, $request);
+            $response = $this->groupsController->checkGroupPoints($group, $entityManager, $request);
+            if ($response) {
+                return $response;
+            }
         }
         
         $total = null;
